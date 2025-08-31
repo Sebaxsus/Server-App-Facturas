@@ -1,28 +1,53 @@
 import mongoose, { Document, Schema } from "mongoose";
-// Como los tipos al compilar 
-// En TypeScript, una interfaz, un type alias o una clase usada como tipo se eliminan cuando el código se compila a JavaScript (porque JS no tiene tipos).
+/* 
+Como los type alias, interfaces y clases usadas para tipar al compilar de TypeScript a JavaScript se eliminan ya que JavaScript no tiene tipos
+Al momento de hacer un import normal `import { UserData} from '../../interfaces/interfaces.js'` TypeScript puede incluir ese módulo en el bundle aunque solo 
+se use como tipo.
 
-// El problema es que si usas un import normal, TypeScript puede incluir ese módulo en el bundle aunque solo lo uses como tipo. Para evitarlo, existe import type.
+Para evitarlo se usa `import type {UserData} from '../../interfaces/interfaces.js'`,
+Con esto al compilar ese `import type` no genera ningún import en el JavaScript Final
+`from '../../interfaces/interfaces.js`
 
-// Al compilar, ese import type no genera ningún import en el JS final.
+Asi evitando un import innecesario "require("./interfaces") (en CommonJS) o un import "./interfaces" (en ESModules)"
+Ya que no es necesario en tiempo de ejecución.
 
-// import { Persona } from "./persona";
-// El compilador podría generar un require("./persona") (en CommonJS) o un import "./persona" (en ESModules), aunque en realidad no lo necesites en tiempo de ejecución.
-// En cambio, si hubieras escrito:
+En resumen:
 
-// import { Persona } from "./persona";
+    import type → garantiza que el import se elimina en tiempo de compilación, porque solo es un tipo.
 
-// n resumen:
+    Si necesitas ambos, puedes mezclarlos
+    import { crearPersona } from "./persona";
+    import type { Persona } from "./persona";
 
-// import type → garantiza que el import se elimina en tiempo de compilación, porque solo es un tipo.
+    const juan: Persona = crearPersona("Juan", 25);
 
-// Si necesitas ambos, puedes mezclarlos
-// import { crearPersona } from "./persona";
-// import type { Persona } from "./persona";
+    Evita imports innecesarios en el bundle.
 
-// const juan: Persona = crearPersona("Juan", 25);
+    Es muy útil en proyectos grandes o con bundlers (Webpack, Vite, etc.), porque reduce código muerto.
+*/
 
-// Evita imports innecesarios en el bundle.
-
-// Es muy útil en proyectos grandes o con bundlers (Webpack, Vite, etc.), porque reduce código muerto.
 import type { UserData, MovimientoAhorro, Factura, Arriendo } from "../../interfaces/interfaces.js";
+
+// Definiendo el tipo de Documento Mongoose
+interface IUser extends Document, UserData {
+    userId: string
+    lastSyncedTimestamp: Date
+}
+
+const userSchema = new Schema<IUser>({
+    userId: { type: String, required: true, unique: true },
+    lastSyncedTimestamp: {
+        type: Schema.Types.Date,
+        set: (value: string | Date) => {
+            // Setter encargado de Parsear el String Formato Date ISO a Date
+            if (!value) return value
+            return value instanceof Date ? value : new Date(value)
+        },
+        required: false
+    },
+    Ahorros: { type: Array<MovimientoAhorro>(), default: [] },
+    Facturas: { type: Array<Factura>(), default: [] },
+    Arriendo: { type: Object, default: {} },
+})
+
+export const User = mongoose.model<IUser>('User', userSchema)
