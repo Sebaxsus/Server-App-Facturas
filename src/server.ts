@@ -1,9 +1,6 @@
 import express from "express"
 import { json, type Request, type Response } from "express"
 import mongoose from "mongoose"
-import jwt from "jsonwebtoken"
-import { User } from "./models/Mongo/User.js"
-import type { UserDataDTO, UserData } from "./interfaces/interfaces.js"
 
 const app = express()
 const PORT = process.env.PORT || 3000
