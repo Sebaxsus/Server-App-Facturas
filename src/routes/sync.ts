@@ -9,7 +9,7 @@ import type { AuthRequest, SyncRequest } from "../interfaces/authInterface.js"
 
 const syncRouter = Router()
 
-syncRouter.get('/last-timestamp', authToken, async (req: AuthRequest, res: Response, next: NextFunction) => {
+syncRouter.get('/last-timestamp', authToken, async (req: AuthRequest, res: Response) => {
     try {
         const userId = req.user?.userId
         const user = await User.findOne({ userId })
@@ -148,5 +148,8 @@ syncRouter.post('/Arriendo', authToken, async (req: SyncRequest<{ Arriendo: Arri
         return res.status(500).json({ message: 'Error en el Servidor' })
     }
 })
+
+// Export Nombrado
+export { syncRouter }
 
 export default syncRouter

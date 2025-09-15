@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
+import bcrypt from 'bcrypt'
 /* 
 Como los type alias, interfaces y clases usadas para tipar al compilar de TypeScript a JavaScript se eliminan ya que JavaScript no tiene tipos
 Al momento de hacer un import normal `import { UserData} from '../../interfaces/interfaces.js'` TypeScript puede incluir ese módulo en el bundle aunque solo 
@@ -31,11 +32,15 @@ import type { UserData, MovimientoAhorro, Factura, Arriendo } from "../../interf
 // Definiendo el tipo de Documento Mongoose
 interface IUser extends Document, UserData {
     userId: string
+    username: string
+    passwordHash: string
     lastSyncedTimestamp: Date
 }
 
 const userSchema = new Schema<IUser>({
     userId: { type: String, required: true, unique: true },
+    username: { type: String, required: true, unique: true },
+    passwordHash: { type: String, required: true}, 
     lastSyncedTimestamp: {
         type: Schema.Types.Date,
         set: (value: string | Date) => {
@@ -49,5 +54,10 @@ const userSchema = new Schema<IUser>({
     Facturas: { type: Array<Factura>(), default: [] },
     Arriendo: { type: Object, default: {} },
 })
+
+// Metodo para comparar contraseñas
+userSchema.methods.comparePassword = async function(password: string): Promise<boolean> {
+    return bcrypt.compare(password, this.passwordHash)
+}
 
 export const User = mongoose.model<IUser>('User', userSchema)
