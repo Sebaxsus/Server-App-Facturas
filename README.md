@@ -12,8 +12,8 @@ El modelo de almacenamiento es definido por **dos colecciones** (Tablas) Relacio
     >
     > - **_id** (String): Identificador único Generado por mongo.
     > - **dirección** (String): Dirección física de la Casa/Apartamento.
-    > - **UsersIds** (Array\<Number>): Arreglo de Identificadores de todos los usuarios ligados a la Casa/Apartamento.
-    > - **Ahorros** (Array\<MovimientoAhorro>): Arreglo de transacciones de la caja de ahorros común de la casa (_id, movimiento, fecha, monto, usuario(username), timestamp, syncStatus).
+    > - **usersIds** (Array\<Number>): Arreglo de Identificadores de todos los usuarios ligados a la Casa/Apartamento.
+    > - **ahorros** (Array\<MovimientoAhorro>): Arreglo de transacciones de la caja de ahorros común de la casa (_id, movimiento, fecha, monto, usuario(username), timestamp, syncStatus).
     > - **tiposFacturas** (Array\<Factura>): Arreglo de Objectos con los datos de cada Tipo de Factura (_id, tipo, empresa, PaginaDePago, FechaDeLLegada).
     > - **recibosFacturas** (Array\<Recibo>): Arreglo de Recibos de todos los Tipos de facturas (_id, tipoId, fechaDePago, comprobante, timestamp, syncStatus, estado).
     > - **arriendo** (Object\<Arriendo>): Objecto/Esquema con las propiedades (_id, fechaDePago, arrendatario).
@@ -28,7 +28,7 @@ El modelo de almacenamiento es definido por **dos colecciones** (Tablas) Relacio
     > - **username** (String): Nombre de usuario único.
     > - **passwordHash** (String): Cadena de caracteres encriptados de la contraseña.
     > - **casaId** (String): Identificador único referenciando la colección de datos de la casa.
-    > - **Ahorros** (Array\<MovimientoAhorro>): Arreglo de transacciones de la caja de ahorros personal (_id, movimiento, fecha, monto, usuario(username), timestamp, syncStatus).
+    > - **ahorros** (Array\<MovimientoAhorro>): Arreglo de transacciones de la caja de ahorros personal (_id, movimiento, fecha, monto, usuario(username), timestamp, syncStatus).
     > lastSyncedTimestamp: (Date): Fecha de la ultima sincronización de el usuario, Se usa para verificar que esta al dia los datos entre el Cliente y la Base de Datos.
     > ---
     > --- Colección Usuario.

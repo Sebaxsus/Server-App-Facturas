@@ -1,9 +1,9 @@
 export interface MovimientoAhorro {
-    _id: string,
+    _id: string, // Se crea en el Cliente
     movimiento: string,
     fecha: string,
     monto: number,
-    usuario: string,
+    usuario: string, // Id del usuario que lo creo
     timestamp: string,
     syncStatus?: 'pending' | 'synced',
 }
@@ -11,38 +11,36 @@ export interface MovimientoAhorro {
 // Indica que ese Atributo / Parametro es opcional
 
 export interface Recibo {
-    _id: string,
+    _id: string, // Se crea en el Cliente
+    tipoFacturaId: string,
     fechaDePago: string,
     comprobante: string,
     timestamp: string,
     syncStatus?: 'pending' | 'synced',
+    estado:  "pago" | "pendiente",
 }
 
-export interface Factura {
-    _id: string,
+export interface TiposFacturas {
+    _id: string, // Se crea en mongo
     tipo: string,
     empresa: string,
     paginaDePago: string,
     fechaDeLlegada: string,
-    recibos: Recibo[],
-}
-
-export interface PagoArriendo extends Recibo  {
-    estado: string,
 }
 
 export interface Arriendo {
+    _id: string, // Se crea en mongo
     fechaDePago: string,
     direccion: string,
     arrendatario: string,
-    pagos: PagoArriendo[],
 }
 
 export interface UserData {
-    Ahorros: MovimientoAhorro[],
-    Facturas: Factura[],
-    Arriendo: Arriendo,
-    lastSyncedTimestamp: Date,
+    lastSyncedTimestamp: Date | null,
+}
+
+export interface HouseData {
+    lastSyncedTimestamp: Date | null,
 }
 
 /* 
@@ -65,9 +63,9 @@ export interface UserData {
         a un Date.
 */
 export interface UserDataDTO {
-    Ahorros: MovimientoAhorro[],
-    Facturas: Factura[],
-    Arriendo: Arriendo,
+    ahorros: MovimientoAhorro[],
+    facturas: TiposFacturas[],
+    arriendo: Arriendo,
     lastSyncedTimestamp: string,
 }
 

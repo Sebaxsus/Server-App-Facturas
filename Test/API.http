@@ -1,5 +1,5 @@
 GET http://localhost:3000/sync/last-timestamp
-Authorization: Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNiZDUxYTQwMzZhZDBkNTQ4ZmJlOTUiLCJpYXQiOjE3NTgxODg4MjYsImV4cCI6MTc1ODE5MjQyNn0.jsyVTz8Xg8nN_zAK1vzn0nlR70AxsZUCbKDCYYk8HKY
+Authorization: Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNiZDUxYTQwMzZhZDBkNTQ4ZmJlOTUiLCJpYXQiOjE3NTgxOTI3NjIsImV4cCI6MTc1ODE5NjM2Mn0.alMU-3Ga5v9DEpdmP5vYQIXlWIhrUpzFq3q_-zyHHdo
 
 ### Creando un usuario
 POST http://localhost:3000/auth/register
@@ -20,8 +20,71 @@ Content-Type: application/json
     "password": "test"
 }
 
-### 
+### Sincronizando Datos sin tener un LastSyncTimestamp
 
-### 
+POST http://localhost:3000/sync/Ahorros
+Authorization: Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNiZDUxYTQwMzZhZDBkNTQ4ZmJlOTUiLCJpYXQiOjE3NTgxOTI3NjIsImV4cCI6MTc1ODE5NjM2Mn0.alMU-3Ga5v9DEpdmP5vYQIXlWIhrUpzFq3q_-zyHHdo
+Content-Type: application/json
+
+{
+    "user": {
+        "userId": "68cbd51a4036ad0d548fbe95",
+        "username": "sebas",
+        "passwordHash": "$2b$10$Hhz/e3X0DEICuZrfa4wtEe2LbvoLb1eRkhb42ozEHJwFFIjByqsxm"
+    },
+    "Ahorros": [
+            {
+                "movimiento": "Ingreso",
+                "fecha": "2025-08-18T13:25",
+                "monto": "50000",
+                "usuario": "Papá",
+                "timestamp": "2025-08-18T14:30:00.000Z",
+                "syncStatus": "pending"
+            },
+            {
+                "movimiento": "Ingreso",
+                "fecha": "2025-08-18T16:30",
+                "monto": "50000",
+                "usuario": "Sebas",
+                "timestamp": "2025-08-18T21:30:52.463Z",
+                "syncStatus": "pending"
+            }
+        ]
+}
+
+### Sincronizando Datos con LastSyncTimestamp
+
+POST http://localhost:3000/sync/Ahorros
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNiZDUxYTQwMzZhZDBkNTQ4ZmJlOTUiLCJpYXQiOjE3NTgxODg4MjYsImV4cCI6MTc1ODE5MjQyNn0.jsyVTz8Xg8nN_zAK1vzn0nlR70AxsZUCbKDCYYk8HKY
+Content-Type: application/json
+
+{
+    "user": {
+        "userId":"68cbd51a4036ad0d548fbe95",
+        "username":"sebas",
+        "passwordHash":"$2b$10$Hhz/e3X0DEICuZrfa4wtEe2LbvoLb1eRkhb42ozEHJwFFIjByqsxm",
+    },
+    "Ahorros": [
+        {
+            "movimiento": "Ingreso",
+            "fecha": "2025-08-18T13:25",
+            "monto": "50000",
+            "usuario": "Papá",
+            "timestamp": "2025-08-18T14:30:00.000Z",
+            "syncStatus": "pending"
+        },
+        {
+            "movimiento": "Ingreso",
+            "fecha": "2025-08-18T16:30",
+            "monto": "50000",
+            "usuario": "Sebas",
+            "timestamp": "2025-08-18T21:30:52.463Z",
+            "syncStatus": "pending"
+        }
+    ],
+    "lastSyncedTimestamp": "2025-08-18T14:30:00.000Z"
+}
+
+### Probando la Respuesta a una Ruta desconocida
 
 GET http://localhost:3000/sasd

@@ -17,7 +17,7 @@ export const authToken = (req: AuthRequest, res: Response, next: NextFunction) =
     }
     const token = authHeader && authHeader.split(' ')[1]
 
-    console.log("Token recibido en el Middle: ", token)
+    // console.log("Token recibido en el Middle: ", token)
 
     if (token == null) {
         return res.status(401).json({ message: "Asegurese que se esta enviando el token"})
