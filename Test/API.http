@@ -1,1 +1,27 @@
-GET http://localhost:3000/sync
+GET http://localhost:3000/sync/last-timestamp
+Authorization: Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNiZDUxYTQwMzZhZDBkNTQ4ZmJlOTUiLCJpYXQiOjE3NTgxODg4MjYsImV4cCI6MTc1ODE5MjQyNn0.jsyVTz8Xg8nN_zAK1vzn0nlR70AxsZUCbKDCYYk8HKY
+
+### Creando un usuario
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+    "username": "sebas",
+    "password": "test"
+}
+
+### Usando el Login
+
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+    "username": "sebas",
+    "password": "test"
+}
+
+### 
+
+### 
+
+GET http://localhost:3000/sasd

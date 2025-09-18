@@ -27,14 +27,16 @@ En resumen:
     Es muy útil en proyectos grandes o con bundlers (Webpack, Vite, etc.), porque reduce código muerto.
 */
 
-import type { UserData, MovimientoAhorro, Factura, Arriendo } from "../../interfaces/interfaces.js";
+import type { UserData, MovimientoAhorro, Factura } from "../../interfaces/interfaces.js";
+import { ArriendoSchema } from "./SubSchema.js";
 
 // Definiendo el tipo de Documento Mongoose
-interface IUser extends Document, UserData {
-    userId: string
-    username: string
-    passwordHash: string
-    lastSyncedTimestamp: Date
+export interface IUser extends Document, UserData {
+    userId: string,
+    username: string,
+    passwordHash: string,
+    lastSyncedTimestamp: Date,
+    comparePassword: (password: string) => Promise<boolean>, // Describiendo el metodo para que TS lo reconosca al Instancia desde el Objeto Mongoose generico
 }
 
 const userSchema = new Schema<IUser>({
@@ -43,16 +45,17 @@ const userSchema = new Schema<IUser>({
     passwordHash: { type: String, required: true}, 
     lastSyncedTimestamp: {
         type: Schema.Types.Date,
-        set: (value: string | Date) => {
+        set: (value: string | Date | null | undefined) => {
             // Setter encargado de Parsear el String Formato Date ISO a Date
             if (!value) return value
             return value instanceof Date ? value : new Date(value)
         },
-        required: false
+        required: false,
+        default: null,
     },
     Ahorros: { type: Array<MovimientoAhorro>(), default: [] },
     Facturas: { type: Array<Factura>(), default: [] },
-    Arriendo: { type: Object, default: {} },
+    Arriendo: ArriendoSchema, // Usando el sub-esquema
 })
 
 // Metodo para comparar contraseñas

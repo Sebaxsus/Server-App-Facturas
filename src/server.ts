@@ -1,4 +1,21 @@
 import dotenv from 'dotenv'
+// Cargando las variables de entorno antes de importar cualquier
+// Dependencia o Modulo,
+// 
+// Ya que asi me aseguro que esten cargadas antes de entrar a cualquier
+// Otra dependencia o Modulo que necesite las ENV
+// Spoiler -> En TS no sirve si no se Transpila el Code en lugar de Compilar
+// a JS 😡
+dotenv.config()
+
+const PORT = process.env.PORT || 3000
+const MONGO_URI = process.env.MONGO_URI || ""
+const JWT_SECRET = process.env.JWT_SECRET || "putoDotEnv&PutoTS"
+
+if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET debe ser definida y cargada correctamente como variable de entorno')
+}
+
 import express from "express"
 import { json, type Request, type Response } from "express"
 import mongoose from "mongoose"
@@ -6,15 +23,13 @@ import mongoose from "mongoose"
 // Routuers
 import syncRouter from "./routes/sync.js"
 import authRouter from './routes/auth.js'
-
-dotenv.config()
+import { corsMiddleware } from './middleware/cors.js'
 
 const app = express()
-const PORT = process.env.PORT || 3000
-const MONGO_URI = process.env.MONGO_URI || ""
 
 app.disable('x-powered-by')
-app.use(json)
+app.use(json())
+app.use(corsMiddleware())
 
 // Driver a MongoDB
 mongoose.connect('mongodb://localhost/appCuentas')

@@ -17,8 +17,9 @@ syncRouter.get('/last-timestamp', authToken, async (req: AuthRequest, res: Respo
         if (!user) {
             return res.status(404).json({message: 'Usuario no encontrado.'})
         }
-
-        res.json({ lastSyncedTimestamp: user.lastSyncedTimestamp })
+        // console.log(user.lastSyncedTimestamp, typeof user.lastSyncedTimestamp, typeof user.lastSyncedTimestamp === "undefined", typeof user.lastSyncedTimestamp === undefined)
+        // if (typeof user.lastSyncedTimestamp === "undefined")
+        res.status(200).json({ lastSyncedTimestamp: typeof user.lastSyncedTimestamp === "undefined" ? null : user.lastSyncedTimestamp})
     } catch (err) {
         res.status(500).json({ message: 'Error en el servidor'})
     }
