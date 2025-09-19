@@ -5,7 +5,8 @@ export interface MovimientoAhorro {
     monto: number,
     usuario: string, // Id del usuario que lo creo
     timestamp: string,
-    syncStatus?: 'pending' | 'synced',
+    // syncStatus?: 'pending' | 'synced', Este campo DEBE ser solo de el Cliente 
+    // para verificar si tiene Datos por sincronizar
 }
 // el Signo de Interrogacion al final de syncStatus '?'
 // Indica que ese Atributo / Parametro es opcional
@@ -16,11 +17,12 @@ export interface Recibo {
     fechaDePago: string,
     comprobante: string,
     timestamp: string,
-    syncStatus?: 'pending' | 'synced',
     estado:  "pago" | "pendiente",
+    // syncStatus?: 'pending' | 'synced', Este campo DEBE ser solo de el Cliente 
+    // para verificar si tiene Datos por sincronizar
 }
 
-export interface TiposFacturas {
+export interface TipoFactura {
     _id: string, // Se crea en mongo
     tipo: string,
     empresa: string,
@@ -36,11 +38,11 @@ export interface Arriendo {
 }
 
 export interface UserData {
-    lastSyncedTimestamp: Date | null,
+    lastSyncedTimestamp: String | Date | null,
 }
 
 export interface HouseData {
-    lastSyncedTimestamp: Date | null,
+    lastSyncedTimestamp: String | Date | null,
 }
 
 /* 
@@ -64,7 +66,7 @@ export interface HouseData {
 */
 export interface UserDataDTO {
     ahorros: MovimientoAhorro[],
-    facturas: TiposFacturas[],
+    facturas: TipoFactura[],
     arriendo: Arriendo,
     lastSyncedTimestamp: string,
 }

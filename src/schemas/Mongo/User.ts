@@ -27,8 +27,9 @@ En resumen:
     Es muy útil en proyectos grandes o con bundlers (Webpack, Vite, etc.), porque reduce código muerto.
 */
 
-import type { Arriendo, MovimientoAhorro, Recibo, TiposFacturas, UserData } from "../../interfaces/interfaces.js";
-import { MovimientoAhorroSchema, TipoFacturaSchema, RecibosSchema, ArriendoSchema } from "./SubSchema.js";
+import type { MovimientoAhorro, UserData } from "../../interfaces/interfaces.js";
+import { MovimientoAhorroSchema } from "./SubSchema.js";
+import { House } from "./House.js";
 
 // Definiendo el tipo de Documento Mongoose
 export interface IUser extends Document, UserData {
@@ -37,45 +38,11 @@ export interface IUser extends Document, UserData {
     passwordHash: string,
     houseId: string, // Relacion entre una Casa a muchos Usuarios
     ahorros: MovimientoAhorro[],
-    lastSyncedTimestamp: Date | null,
+    // lastSyncedTimestamp: Date | null, // Este campo se herada de la Interfaz UserData
     comparePassword: (password: string) => Promise<boolean>, // Describiendo el metodo para que TS lo reconosca al Instancia desde el Objeto Mongoose generico
 }
 
-// Definiendo el documento house Mongoose
-export interface IHouse extends Document {
-    houseId: string,
-    direccion: string,
-    // usersId: [string], // Para mi que siguie estan la relacion uno a mucho pero aja!
-    ahorros: MovimientoAhorro[],
-    tiposFacturas: TiposFacturas[],
-    arriendo: Arriendo,
-    recibosFacturas: Recibo[],
-    recibosArriendo: Recibo[],
-    lastSyncedTimestamp: Date | null,
-}
-
-const houseSchema = new Schema<IHouse>({
-    houseId: { type: String, required: true, unique: true, index: true },
-    direccion: { type: String, required: true, unique: true },
-    ahorros: [MovimientoAhorroSchema],
-    tiposFacturas: [TipoFacturaSchema],
-    arriendo: ArriendoSchema,
-    recibosFacturas: [RecibosSchema],
-    recibosArriendo: [RecibosSchema],
-    lastSyncedTimestamp: {
-        type: Schema.Types.Date,
-        set: (value: string | Date | null | undefined) => {
-            if (!value) return value
-            return value instanceof Date ? value : new Date(value)
-        },
-        required: false,
-        default: null
-    }
-})
-
-const House = mongoose.model<IHouse>('House', houseSchema)
-// [Mas info Sobre Models](https://mongoosejs.com/docs/models.html)
-// Basicamente la Instancia de el Modelo (Mongoose) crea el Documento (Mongo)
+// El Esquema user usa de Referencia en HouseId un modelo de House (Instancia de el Esquema)
 
 const userSchema = new Schema<IUser>({
     userId: { type: String, required: true, unique: true, index: true },
@@ -97,6 +64,8 @@ const userSchema = new Schema<IUser>({
 // [Info de porque de referencia se usa el Modelo](https://mongoosejs.com/docs/api/schematype.html#SchemaType.prototype.ref())
 
 const User = mongoose.model<IUser>('User', userSchema)
+// [Mas info Sobre Models](https://mongoosejs.com/docs/models.html)
+// Basicamente la Instancia de el Modelo (Mongoose) crea el Documento (Mongo)
 
 
 // Metodo para comparar contraseñas
@@ -106,5 +75,4 @@ userSchema.methods.comparePassword = async function(password: string): Promise<b
 
 export {
     User,
-    House
 }

@@ -1,6 +1,6 @@
 // Creando sub esquemas para el Objeto de Arriendo en el Esquema House
 import { Schema } from "mongoose";
-import type { Arriendo, Recibo, MovimientoAhorro, TiposFacturas } from "../../interfaces/interfaces.js";
+import type { Arriendo, Recibo, MovimientoAhorro, TipoFactura } from "../../interfaces/interfaces.js";
 
 // _id -> UUID Generado por el Sistema de Guardado Local en el Cliente
 // syncStatus -> Por defecto (En caso de que no venga en la peticion) es 'synced' ya que se esta "Sincronizando" 👍
@@ -48,7 +48,6 @@ const MovimientoAhorroSchema = new Schema<MovimientoAhorro>({
     monto: { type: Number, required: true },
     usuario: { type: String, required: true },
     timestamp: { type: String, required: true },
-    syncStatus: { type: String, default: 'synced' }
 }, { _id: false, })
 // Usar la opcion _id: false, Le indica a Mongo que no genere un _id automatico
 // Esto se va a manejar en el Cliente usando Universal Unique Identifier (UUID)
@@ -63,14 +62,13 @@ const RecibosSchema = new Schema<Recibo>({
     fechaDePago: { type: String, required: true },
     comprobante: { type: String, required: true },
     timestamp: { type: String, required: true },
-    syncStatus: { type: String, default: 'synced' },
     estado: { type: String, default: 'pendiente' }
 }, { _id: false })
 // Usar la opcion _id: false, Le indica a Mongo que no genere un _id automatico
 // Esto se va a manejar en el Cliente usando Universal Unique Identifier (UUID)
 // Es decir lo genero en el Cliente 👍
 
-const TipoFacturaSchema = new Schema<TiposFacturas>({
+const TipoFacturaSchema = new Schema<TipoFactura>({
     //_id: { type: String, index: true }, // Al no declarar _id mongo lo creara automaticamente con un Generador de ID unicas
     tipo: { type: String, required: true },
     empresa: { type: String, required: true },

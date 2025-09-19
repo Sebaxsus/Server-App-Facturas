@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from "express"
 import bcrypt from 'bcrypt'
 import jwt from "jsonwebtoken"
-import { User, type IUser } from "../models/Mongo/User.js"
+import { User, type IUser } from "../schemas/Mongo/User.js"
 import mongoose, { type Document } from "mongoose"
 
 const authRouter = Router()

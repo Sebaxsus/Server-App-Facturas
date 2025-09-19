@@ -27,7 +27,7 @@ export const authToken = (req: AuthRequest, res: Response, next: NextFunction) =
         if (err) {
             return res.status(403).json({message: err})
         }
-        req.user = { userId: user.userId};
+        req.user = { userId: user.userId, houseId: user.houseId };
         next()
     })
 }
