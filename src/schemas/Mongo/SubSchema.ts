@@ -73,7 +73,17 @@ const TipoFacturaSchema = new Schema<TipoFactura>({
     tipo: { type: String, required: true },
     empresa: { type: String, required: true },
     paginaDePago: { type: String, required: true },
-    fechaDeLlegada: { type: String, required: true} // Fecha en String Formato Date ISO
+    fechaDeLlegada: { type: String, required: true}, // Fecha en String Formato Date ISO
+    lastSyncedTimestamp: {
+        type: Schema.Types.Date,
+        set: (value: string | Date | null | undefined) => {
+            // Setter encargado de Parsear el String Formato Date ISO a Date
+            if (!value) return value
+            return value instanceof Date ? value : new Date(value)
+        },
+        required: false,
+        default: null
+    },
 }, { _id: true })
 // Mantego el hecho que si cree el Indice con el esquema
 
@@ -82,7 +92,17 @@ const TipoFacturaSchema = new Schema<TipoFactura>({
 const ArriendoSchema = new Schema<Arriendo>({
     fechaDePago: { type: String, required: true },
     direccion: { type: String, required: true },
-    arrendatario: { type: String, required: true }
+    arrendatario: { type: String, required: true },
+    lastSyncedTimestamp: {
+        type: Schema.Types.Date,
+        set: (value: string | Date | null | undefined) => {
+            // Setter encargado de Parsear el String Formato Date ISO a Date
+            if (!value) return value
+            return value instanceof Date ? value : new Date(value)
+        },
+        required: false,
+        default: null
+    }
 }, { _id: true })
 
 export {

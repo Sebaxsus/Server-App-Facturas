@@ -28,6 +28,7 @@ export interface TipoFactura {
     empresa: string,
     paginaDePago: string,
     fechaDeLlegada: string,
+    lastSyncedTimestamp: String | Date | null, // Cadena de caracterser con Formato Date ISO
 }
 
 export interface Arriendo {
@@ -35,6 +36,7 @@ export interface Arriendo {
     fechaDePago: string,
     direccion: string,
     arrendatario: string,
+    lastSyncedTimestamp: String | Date | null, // Cadena de caracterser con Formato Date ISO
 }
 
 export interface UserData {

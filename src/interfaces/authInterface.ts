@@ -1,5 +1,5 @@
 import { type Request } from "express"
-import { type UserDataDTO } from "./interfaces.js"
+import type { MovimientoAhorro, TipoFactura, Arriendo } from "./interfaces.js"
 
 // Esta interfaz describe las propiedades de user que
 // Necesito usar luego de Autenticar a un usuario usando
@@ -11,7 +11,25 @@ export interface AuthRequest extends Request {
         userId: string,
         houseId: string,
     }
+    // userData?: {
+    //     userId: string,
+    //     houseId: string,
+    //     lastSyncedTimestamp: String | Date | null, 
+    // },
+    // houseData?: {
+    //     houseId: string,
+    //     direccion: string,
+    //     // usersId: [string], // Para mi que siguie estan la relacion uno a mucho pero aja!
+    //     ahorros: MovimientoAhorro[],
+    //     tipoFactura: TipoFactura[],
+    //     arriendo: Arriendo,
+    //     lastSyncedTimestamp: String | Date | null, 
+    // }
 }
+
+// Se incluye houseId dentro de la Prop user
+// Ya que es parte de la Info de User tener la
+// Id de la casa a la que esta vinculado.
 
 export interface SyncRequest<T> extends AuthRequest {
     body: T & {
