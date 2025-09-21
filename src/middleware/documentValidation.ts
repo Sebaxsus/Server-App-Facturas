@@ -1,11 +1,17 @@
 import type { Response, NextFunction } from "express"
-import type { AuthRequest } from "../interfaces/authInterface.js"
+import type { DocRequest } from "../interfaces/authInterface.js"
 import { User } from "../schemas/Mongo/User.js"
 import { House } from "../schemas/Mongo/House.js"
 
-export const validateDoc = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const validateDoc = async (req: DocRequest, res: Response, next: NextFunction) => {
+
     const userId = req.user?.userId
-    const houseId = req.user?.houseId
+    // Aqui hay dos maneras no encapsular await User.findById(user.Id).select('houseId')
+    // Y luego llamar houseId.houseId --> Esto ya que mongoose no puede excluir _id entonces houseId seria
+    // {_id: ObjectId(), houseId: ObjectId()}, _id es el Id del usuario
+    const houseId = (await User.findById(userId).select('houseId'))?.houseId
+
+    console.log(`UserId ValidMid: ${userId} | HouseId: ${houseId}`)
     // Como el flujo seria:
     //  Verificar que si existe el Usuario
     //  Verificar que si existe un HouseId en el Usuario
@@ -34,8 +40,10 @@ export const validateDoc = async (req: AuthRequest, res: Response, next: NextFun
     // Configurando de manera implicita que es de exclusion con el flag "-" antes de el campo
     // Lo que significa que va a omitor los campos especificados en .select()
     // [Mas INFO](https://mongoosejs.com/docs/api/query.html#Query.prototype.select())
-    const house = await House.findById({ houseId }).select("-recibosFacturas -recibosArriendo")
-    const user = await User.findById({ userId }).select("houseId lastSyncedTimestamp")
+    // const house = await House.findById(houseId).select("-recibosFacturas -recibosArriendo")
+    // const user = await User.findById(userId).select("houseId lastSyncedTimestamp")
+    const house = await House.findById(houseId).select("lastSyncedTimestamp")
+    const user = await User.findById(userId).select("lastSyncedTimestamp")
 
     if (!house) {
         return res.status(404).json({
@@ -50,6 +58,10 @@ export const validateDoc = async (req: AuthRequest, res: Response, next: NextFun
     }
 
     // Inyecto los campos userData y houseData
+    req.user = {
+        userId,
+        houseId
+    }
     // A el objecto Request (req)
     // Aumenta complejidad Inutil Actualmente 😓 Perdi el tiempo :'(
     // req.userData = {

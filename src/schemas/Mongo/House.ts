@@ -5,20 +5,20 @@ import { MovimientoAhorroSchema, TipoFacturaSchema, ArriendoSchema, RecibosSchem
 
 // Definiendo el documento house Mongoose
 export interface IHouse extends Document, HouseData {
-    houseId: string,
+    // houseId: string,
     direccion: string,
     // usersId: [string], // Para mi que siguie estan la relacion uno a mucho pero aja!
     ahorros: MovimientoAhorro[],
     tipoFactura: TipoFactura[],
     arriendo: Arriendo,
     recibosFacturas: Recibo[],
-    recibosArriendo: Recibo[],
+    recibosArriendo: Recibo[]
     // lastSyncedTimestamp: Date | null, // Este campo se herada de la Interfaz HouseData
 }
 
 const houseSchema = new Schema<IHouse>({
-    houseId: { type: String, required: true, unique: true, index: true },
-    direccion: { type: String, required: true, unique: true },
+    // houseId: { type: String, required: true, unique: true, index: true },
+    direccion: { type: String, required: true, unique: true, index: true },
     ahorros: [MovimientoAhorroSchema],
     tipoFactura: [TipoFacturaSchema],
     arriendo: ArriendoSchema,
@@ -33,10 +33,10 @@ const houseSchema = new Schema<IHouse>({
         required: false,
         default: null
     }
-})
+}, { _id: true })
 
 const House = mongoose.model<IHouse>('House', houseSchema)
 
 export {
-    House,
+    House
 }

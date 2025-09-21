@@ -47,7 +47,7 @@ const MovimientoAhorroSchema = new Schema<MovimientoAhorro>({
     fecha: { type: String, required: true },
     monto: { type: Number, required: true },
     usuario: { type: String, required: true },
-    timestamp: { type: String, required: true },
+    timestamp: { type: String, required: true, index: true }
 }, { _id: false, })
 // Usar la opcion _id: false, Le indica a Mongo que no genere un _id automatico
 // Esto se va a manejar en el Cliente usando Universal Unique Identifier (UUID)
@@ -73,7 +73,7 @@ const TipoFacturaSchema = new Schema<TipoFactura>({
     tipo: { type: String, required: true },
     empresa: { type: String, required: true },
     paginaDePago: { type: String, required: true },
-    fechaDeLlegada: { type: String, required: true}, // Fecha en String Formato Date ISO
+    fechaDeLlegada: { type: String, required: true }, // Fecha en String Formato Date ISO
     lastSyncedTimestamp: {
         type: Schema.Types.Date,
         set: (value: string | Date | null | undefined) => {
@@ -83,7 +83,7 @@ const TipoFacturaSchema = new Schema<TipoFactura>({
         },
         required: false,
         default: null
-    },
+    }
 }, { _id: true })
 // Mantego el hecho que si cree el Indice con el esquema
 

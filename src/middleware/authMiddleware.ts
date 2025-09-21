@@ -25,11 +25,10 @@ export const authToken = (req: AuthRequest, res: Response, next: NextFunction) =
 
     jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
         if (err) {
-            return res.status(403).json({message: err})
+            return res.status(498).json({message: err})
         }
         req.user = {
             userId: user.userId,
-            houseId: user.houseId
         };
         next()
     })

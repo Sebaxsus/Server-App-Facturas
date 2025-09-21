@@ -2,7 +2,9 @@ import { Router, type Request, type Response } from "express"
 import bcrypt from 'bcrypt'
 import jwt from "jsonwebtoken"
 import { User, type IUser } from "../schemas/Mongo/User.js"
-import mongoose, { type Document } from "mongoose"
+import { House, type IHouse } from "../schemas/Mongo/House.js"
+import mongoose, { Schema, type Document } from "mongoose"
+import { json } from "stream/consumers"
 
 const authRouter = Router()
 const JWT_SECRET = process.env.JWT_SECRET || "putoDotEnv&PutoTS"
@@ -18,9 +20,10 @@ if (!JWT_SECRET) {
 authRouter.post('/register', async (req: Request, res: Response) => {
     try {
         const { username, password } = req.body
+        const direccion = req.body.direccion.toLowerCase()
 
-        if (!username || !password) {
-            return res.status(400).json({ message: 'Username y password son requeridos' })
+        if (!username || !password || !direccion) {
+            return res.status(400).json({ message: 'Username, password y direccion son requeridos' })
         }
 
         const existingUser = await User.findOne({ username })
@@ -28,19 +31,45 @@ authRouter.post('/register', async (req: Request, res: Response) => {
             return res.status(409).json({ message: 'El usuario ya existe' })
         }
 
+        const existingAddress = await House.findOne({ direccion }).select("_id")
+
+        console.log("ExistingAddress: ", existingAddress)
+
+        let houseId
+
+        if (!existingAddress) {
+
+            const newHouse = new House({
+                // houseId: new mongoose.Types.ObjectId().toHexString(), // Generando un ID unico
+                direccion
+            })
+
+            const house = await newHouse.save()
+            console.log("Se creo una Casa nueva: ", house)
+            houseId = house._id
+            // if (newHouse !== resultHosue) {
+            //     return res.status(424).json({
+            //         message: 'El servidor no pudo persistir los datos de Casa, Intentelo Nuevamente!'
+            //     })
+            // } <--- Esto lo hace mongoose con el Try/Catch ya que al fallar el guardado Mongoose tira una excepcion 
+        } else {
+            houseId = existingAddress
+        }
+
         const passwordHash = await bcrypt.hash(password, SALT)
 
         const newUser = new User({
-            userId: new mongoose.Types.ObjectId().toHexString(), // Generando un ID unico
+            // userId: new mongoose.Types.ObjectId().toHexString(), // Generando un ID unico
             username,
             passwordHash,
+            houseId
         })
 
         await newUser.save()
 
         console.log("Se creo el usuario", newUser)
 
-        const token = jwt.sign({ userId: newUser.userId }, JWT_SECRET, { expiresIn: '1h' })
+        const token = jwt.sign({ userId: newUser._id }, JWT_SECRET, { expiresIn: '1h' })
         res.status(201).json({ message: 'Usuario registrado con exito.', token})
     } catch (err) {
         console.error(err)
@@ -63,7 +92,7 @@ authRouter.post('/login', async (req: Request, res: Response) => {
             return res.status(401).json({ message: 'Credenciales invalidas'})
         }
 
-        const token = jwt.sign({ userId: user.userId }, JWT_SECRET, {expiresIn: '1h' })
+        const token = jwt.sign({ userId: user._id }, JWT_SECRET, {expiresIn: '1h' })
         res.status(200).json({token})
     } catch (err) {
         console.error(err)

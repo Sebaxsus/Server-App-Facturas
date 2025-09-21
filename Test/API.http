@@ -1,5 +1,5 @@
-GET http://localhost:3000/sync/last-timestamp
-Authorization: Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNiZDUxYTQwMzZhZDBkNTQ4ZmJlOTUiLCJpYXQiOjE3NTgxOTI3NjIsImV4cCI6MTc1ODE5NjM2Mn0.alMU-3Ga5v9DEpdmP5vYQIXlWIhrUpzFq3q_-zyHHdo
+GET http://localhost:3000/sync/last-sync
+Authorization: Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NTg0NDMyMzcsImV4cCI6MTc1ODQ0NjgzN30.LGxUd7ZQQOXa-9QmzPf01KaWSfEFpcIfW_q2ijDq9Kw
 
 ### Creando un usuario
 POST http://localhost:3000/auth/register
@@ -7,7 +7,8 @@ Content-Type: application/json
 
 {
     "username": "sebas",
-    "password": "test"
+    "password": "test",
+    "direccion": "Cra73#63-28Sur"
 }
 
 ### Usando el Login
@@ -23,7 +24,7 @@ Content-Type: application/json
 ### Sincronizando Datos sin tener un LastSyncTimestamp
 
 POST http://localhost:3000/sync/Ahorros
-Authorization: Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNiZDUxYTQwMzZhZDBkNTQ4ZmJlOTUiLCJpYXQiOjE3NTgxOTI3NjIsImV4cCI6MTc1ODE5NjM2Mn0.alMU-3Ga5v9DEpdmP5vYQIXlWIhrUpzFq3q_-zyHHdo
+Authorization: Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NTg0NDMyMzcsImV4cCI6MTc1ODQ0NjgzN30.LGxUd7ZQQOXa-9QmzPf01KaWSfEFpcIfW_q2ijDq9Kw
 Content-Type: application/json
 
 {
@@ -32,8 +33,9 @@ Content-Type: application/json
         "username": "sebas",
         "passwordHash": "$2b$10$Hhz/e3X0DEICuZrfa4wtEe2LbvoLb1eRkhb42ozEHJwFFIjByqsxm"
     },
-    "Ahorros": [
+    "ahorros": [
             {
+                "_id": "1",
                 "movimiento": "Ingreso",
                 "fecha": "2025-08-18T13:25",
                 "monto": "50000",
@@ -42,6 +44,7 @@ Content-Type: application/json
                 "syncStatus": "pending"
             },
             {
+                "_id": "2",
                 "movimiento": "Ingreso",
                 "fecha": "2025-08-18T16:30",
                 "monto": "50000",
@@ -55,36 +58,143 @@ Content-Type: application/json
 ### Sincronizando Datos con LastSyncTimestamp
 
 POST http://localhost:3000/sync/Ahorros
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNiZDUxYTQwMzZhZDBkNTQ4ZmJlOTUiLCJpYXQiOjE3NTgxODg4MjYsImV4cCI6MTc1ODE5MjQyNn0.jsyVTz8Xg8nN_zAK1vzn0nlR70AxsZUCbKDCYYk8HKY
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NTg0NDMyMzcsImV4cCI6MTc1ODQ0NjgzN30.LGxUd7ZQQOXa-9QmzPf01KaWSfEFpcIfW_q2ijDq9Kw
 Content-Type: application/json
 
 {
     "user": {
         "userId":"68cbd51a4036ad0d548fbe95",
         "username":"sebas",
-        "passwordHash":"$2b$10$Hhz/e3X0DEICuZrfa4wtEe2LbvoLb1eRkhb42ozEHJwFFIjByqsxm",
+        "passwordHash":"$2b$10$Hhz/e3X0DEICuZrfa4wtEe2LbvoLb1eRkhb42ozEHJwFFIjByqsxm"
     },
-    "Ahorros": [
+    "ahorros": [
+            {
+                "_id": "2",
+                "movimiento": "Retiro",
+                "fecha": "2025-08-19T14:05",
+                "monto": 50000,
+                "usuario": "Sebas",
+                "timestamp": "2025-08-19T19:06:08.927Z",
+                "syncStatus": "pending"
+            },
+            {
+                "_id": "3",
+                "movimiento": "Ingreso",
+                "fecha": "2025-08-19T14:07",
+                "monto": 50000,
+                "usuario": "Sebas",
+                "timestamp": "2025-08-19T19:07:33.795Z",
+                "syncStatus": "pending"
+            }
+        ],
+    "lastSyncedTimestamp": "2025-08-18T14:30:00.000Z"
+}
+
+### Probando la ruta Facturas
+POST http://localhost:3000/sync/Facturas
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NTg0NDMyMzcsImV4cCI6MTc1ODQ0NjgzN30.LGxUd7ZQQOXa-9QmzPf01KaWSfEFpcIfW_q2ijDq9Kw
+Content-Type: application/json
+
+{
+    "tipoFactura": [
         {
-            "movimiento": "Ingreso",
-            "fecha": "2025-08-18T13:25",
-            "monto": "50000",
-            "usuario": "Papá",
+            "tipo": "Gas",
+            "empresa": "Empresa Gas",
+            "paginaDePago": "http://pagogas.com",
+            "fechaDeLlegada": "2025-08-15T00:00:00"
+        },
+        {
+            "tipo": "Agua",
+            "empresa": "Empresa Agua",
+            "paginaDePago": "http://pagoagua.com",
+            "fechaDeLlegada": "2025-08-20T00:00:00"
+        },
+        {
+            "tipo": "Luz",
+            "empresa": "Enel",
+            "paginaDePago": "http://pagoluz.com",
+            "fechaDeLlegada": "2025-08-15T00:00:00"
+        }
+    ]
+}
+
+### Probando el Filtro de datos repetidos
+POST http://localhost:3000/sync/Facturas
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NTg0NDMyMzcsImV4cCI6MTc1ODQ0NjgzN30.LGxUd7ZQQOXa-9QmzPf01KaWSfEFpcIfW_q2ijDq9Kw
+Content-Type: application/json
+
+{
+    "tipoFactura": [
+        {
+            "tipo": "Gas",
+            "empresa": "Empresa Gas",
+            "paginaDePago": "http://pagogas.com",
+            "fechaDeLlegada": "2025-08-15T00:00:00"
+        },
+        {
+            "tipo": "Agua",
+            "empresa": "Empresa Agua",
+            "paginaDePago": "http://pagoagua.com",
+            "fechaDeLlegada": "2025-08-20T00:00:00"
+        },
+        {
+            "tipo": "Luz",
+            "empresa": "Enel",
+            "paginaDePago": "http://pagoluz.com",
+            "fechaDeLlegada": "2025-08-15T00:00:00"
+        },
+        {
+            "tipo": "Internet",
+            "empresa": "Claro",
+            "paginaDePago": "http://pagoclaro.com",
+            "fechaDeLlegada": "2025-08-15T00:00:00"
+        }
+    ]
+}
+
+### Probando la Ruta de Arriendo sin lastSyncedTimestamp
+
+POST http://localhost:3000/sync/Arriendo
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NTg0NDMyMzcsImV4cCI6MTc1ODQ0NjgzN30.LGxUd7ZQQOXa-9QmzPf01KaWSfEFpcIfW_q2ijDq9Kw
+Content-Type: application/json
+
+{
+    "arriendo": {
+        "fechaDePago": "2025-09-01T00:00:00",
+        "direccion": "Cra73#63-28Sur",
+        "arrendatario": "John Doe"
+    }
+}
+
+### Probando la Ruta de recibos con el tipo de Factura Gas
+
+POST http://localhost:3000/sync/Recibos
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NTg0NDMyMzcsImV4cCI6MTc1ODQ0NjgzN30.LGxUd7ZQQOXa-9QmzPf01KaWSfEFpcIfW_q2ijDq9Kw
+Content-Type: application/json
+
+{
+    "tipo": "Facturas",
+    "recibos": [
+        {
+            "_id": "1",
+            "tipoFacturaId": "68cfb9f1d860f968c359c519",
+            "fechaDePago": "2025-07-15T00:00:00",
+            "estado": "Pagado",
+            "comprobante": "base64://string-de-la-imagen",
             "timestamp": "2025-08-18T14:30:00.000Z",
             "syncStatus": "pending"
         },
         {
-            "movimiento": "Ingreso",
-            "fecha": "2025-08-18T16:30",
-            "monto": "50000",
-            "usuario": "Sebas",
-            "timestamp": "2025-08-18T21:30:52.463Z",
+            "_id": "2",
+            "tipoFacturaId": "68cfb9f1d860f968c359c519",
+            "fechaDePago": "2025-08-15T00:00:00",
+            "estado": "Pendiente",
+            "comprobante": "",
+            "timestamp": "2025-08-18T14:30:00.000Z",
             "syncStatus": "pending"
         }
-    ],
-    "lastSyncedTimestamp": "2025-08-18T14:30:00.000Z"
+    ]
 }
-
 ### Probando la Respuesta a una Ruta desconocida
 
 GET http://localhost:3000/sasd

@@ -3,7 +3,7 @@
   "scripts": {
     "start": "nodemon dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts --esm",
-    "dev:2": "tsc --watch && nodemon dist/server.js",
+    "dev:2": "tsc --watch",
     "build": "tsc"
   },
   "dependencies": {

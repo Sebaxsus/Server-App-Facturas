@@ -1,5 +1,6 @@
 import { type Request } from "express"
-import type { MovimientoAhorro, TipoFactura, Arriendo } from "./interfaces.js"
+import type { Schema } from "mongoose"
+// import type { MovimientoAhorro, TipoFactura, Arriendo } from "./interfaces.js"
 
 // Esta interfaz describe las propiedades de user que
 // Necesito usar luego de Autenticar a un usuario usando
@@ -8,8 +9,7 @@ import type { MovimientoAhorro, TipoFactura, Arriendo } from "./interfaces.js"
 // Para acceder a los datos usando req.user.(Propiedad)
 export interface AuthRequest extends Request {
     user?: { 
-        userId: string,
-        houseId: string,
+        userId: string
     }
     // userData?: {
     //     userId: string,
@@ -31,7 +31,14 @@ export interface AuthRequest extends Request {
 // Ya que es parte de la Info de User tener la
 // Id de la casa a la que esta vinculado.
 
-export interface SyncRequest<T> extends AuthRequest {
+export interface DocRequest extends AuthRequest {
+    user?: {
+        userId: string,
+        houseId: Schema.Types.ObjectId
+    }
+}
+
+export interface SyncRequest<T> extends DocRequest {
     body: T & {
         lastSyncedTimestamp: string,
     }
