@@ -12,6 +12,9 @@ const PORT = process.env.PORT || 3000
 const MONGO_URI = process.env.MONGO_URI || ""
 const JWT_SECRET = process.env.JWT_SECRET || "putoDotEnv&PutoTS"
 
+// Constante para escuchar en todas las IPs locales disponibles 0 - 255
+const HOST = "0.0.0.0" //getLocalIPAddress() || all posible hosts
+
 if (!JWT_SECRET) {
     throw new Error('JWT_SECRET debe ser definida y cargada correctamente como variable de entorno')
 }
@@ -20,9 +23,10 @@ import express from "express"
 import { json, type Request, type Response } from "express"
 import mongoose from "mongoose"
 
-// Routuers
+// Routers
 import syncRouter from "./routes/sync.js"
 import authRouter from './routes/auth.js'
+// Middleware
 import { corsMiddleware } from './middleware/cors.js'
 
 const app = express()
@@ -50,13 +54,18 @@ app.use('/auth', authRouter)
 // Ruta de Sincronizacion
 app.use('/sync', syncRouter)
 
+// Ruta verificacion servidor Online
+app.get("/ping", (req: Request, res: Response) => {
+    res.status(200).json({message: 'Pong!'})
+})
+
 app.use((req, res) => {
     res.status(404).json({message: 'Revise la ruta usada, Route Not Found 404!'})
 })
 
 
 app.listen(PORT, () => {
-    console.log(`Server RESTFUL Online\nEscuchando en el puerto ${PORT}\nDireccion http://localhost:${PORT}`)
+    console.log(`Server RESTFUL Online\nEscuchando en el puerto ${PORT}\nDireccion http://${HOST}:${PORT}`)
 })
 
 // Export para los test
