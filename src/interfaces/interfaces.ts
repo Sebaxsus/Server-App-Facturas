@@ -17,7 +17,7 @@ export interface Recibo {
     fechaDePago: string,
     comprobante: string,
     timestamp: string,
-    estado:  "pago" | "pendiente",
+    estado:  "Pagado" | "Pendiente",
     // syncStatus?: 'pending' | 'synced', Este campo DEBE ser solo de el Cliente 
     // para verificar si tiene Datos por sincronizar
 }
@@ -28,6 +28,7 @@ export interface TipoFactura {
     empresa: string,
     paginaDePago: string,
     fechaDeLlegada: string,
+    bimestral: boolean,
     lastSyncedTimestamp: String | Date | null, // Cadena de caracterser con Formato Date ISO
 }
 
@@ -36,6 +37,7 @@ export interface Arriendo {
     fechaDePago: string,
     direccion: string,
     arrendatario: string,
+    valor: number,
     lastSyncedTimestamp: String | Date | null, // Cadena de caracterser con Formato Date ISO
 }
 

@@ -62,7 +62,7 @@ const RecibosSchema = new Schema<Recibo>({
     fechaDePago: { type: String, required: true },
     comprobante: { type: String, required: true },
     timestamp: { type: String, required: true },
-    estado: { type: String, default: 'pendiente' }
+    estado: { type: String, default: 'Pendiente' }
 }, { _id: false })
 // Usar la opcion _id: false, Le indica a Mongo que no genere un _id automatico
 // Esto se va a manejar en el Cliente usando Universal Unique Identifier (UUID)
@@ -74,6 +74,7 @@ const TipoFacturaSchema = new Schema<TipoFactura>({
     empresa: { type: String, required: true },
     paginaDePago: { type: String, required: true },
     fechaDeLlegada: { type: String, required: true }, // Fecha en String Formato Date ISO
+    bimestral: { type: Boolean, required: true },
     lastSyncedTimestamp: {
         type: Schema.Types.Date,
         set: (value: string | Date | null | undefined) => {
@@ -93,6 +94,7 @@ const ArriendoSchema = new Schema<Arriendo>({
     fechaDePago: { type: String, required: true },
     direccion: { type: String, required: true },
     arrendatario: { type: String, required: true },
+    valor: { type: Number, required: true },
     lastSyncedTimestamp: {
         type: Schema.Types.Date,
         set: (value: string | Date | null | undefined) => {
