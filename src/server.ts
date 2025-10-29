@@ -56,7 +56,10 @@ app.use('/sync', syncRouter)
 
 // Ruta verificacion servidor Online
 app.get("/ping", (req: Request, res: Response) => {
-    res.status(200).json({message: 'Pong!'})
+    res.status(200).json({
+        message: 'Pong!, Servidor Online',
+        health: 'up',
+    })
 })
 
 app.use((req, res) => {
