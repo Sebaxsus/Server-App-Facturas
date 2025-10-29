@@ -5,9 +5,18 @@ Servidor encargado de almacenar y sincronizar los clientes dentro de una red loc
 
 1. El cliente revisa todas las colecciones (Ahorros, Facturas, Arriendo) buscando que su **PROPIEDAD LOCAL** *(syncStatus)* sea "pending".
 2. En caso de encontrar un registro con estado *"pending"*, Iniciara el proceso de sincronización de ese registro.
-3. En caso de **NO** encontrar registros pendientes por sincronizar, Empezara el proceso de verificar con el servidor su fecha de sincronización.`lastSyncedTimestamp` y si esta atrasado actualizara los datos locales haciendo un "PULL" de los nuevos datos.
+3. 
+    - En caso de **NO** encontrar registros pendientes por sincronizar, Empezara el proceso de verificar con el servidor su fecha de sincronización.`lastSyncedTimestamp` y si esta atrasado actualizara los datos locales haciendo un "PULL" de los nuevos datos.
+    - Si no hay registros pendientes (`pending`), el cliente consulta la `lastSyncedTimestamp` del servidor para determinar si la **Fuente de la Verdad (SOT)** posee datos más recientes. De ser así, el cliente inicia un **PULL** para sincronizar y actualizar sus datos locales.
 
 ## Diseño de Datos y Almacenamiento
+
+Principio Fundamental: El Servidor como Fuente de la Verdad (Source of Truth - SOT)
+El principio rector de este sistema de sincronización es el "Server as the Source of Truth" (SOT). Esto significa que la base de datos centralizada (MongoDB) contiene la versión definitiva, canónica y correcta de todos los datos.
+
+1. Fiabilidad del Servidor: El servidor tiene la última palabra. Si hay un conflicto entre los datos locales del cliente y los datos del servidor, los datos del servidor siempre prevalecen.
+
+2. Validación de Datos: El servidor es el único responsable de filtrar los datos duplicados y verificar la integridad de los datos antes de persistirlos, lo que garantiza la coherencia global.
 
 ### Modelo de la app
 
