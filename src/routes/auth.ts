@@ -22,6 +22,8 @@ authRouter.post('/register', async (req: Request, res: Response) => {
         const { username, password } = req.body
         const direccion = req.body.direccion.toLowerCase()
 
+        console.log("Registro de usuario: ", username, direccion, password)
+
         if (!username || !password || !direccion) {
             return res.status(400).json({ message: 'Username, password y direccion son requeridos' })
         }
@@ -65,12 +67,12 @@ authRouter.post('/register', async (req: Request, res: Response) => {
             houseId
         })
 
-        await newUser.save()
+        const user = await newUser.save()
 
-        console.log("Se creo el usuario", newUser)
+        console.log("Se creo el usuario", user)
 
-        const token = jwt.sign({ userId: newUser._id }, JWT_SECRET, { expiresIn: '1h' })
-        res.status(201).json({ message: 'Usuario registrado con exito.', token})
+        const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' })
+        res.status(201).json({ message: 'Usuario registrado con exito.', token, lastSyncTimestamp: user.lastSyncedTimestamp })
     } catch (err) {
         console.error(err)
         res.status(500).json({message: 'Error Interno en el Servidor'})
@@ -81,6 +83,9 @@ authRouter.post('/register', async (req: Request, res: Response) => {
 authRouter.post('/login', async (req: Request, res: Response) => {
     try {
         const { username, password } = req.body
+
+        console.log("Login de usuario: ", username, password)
+
         if (!username || !password) {
             return res.status(400).json({ message: 'Username y password son requeridos'})
         }
@@ -93,7 +98,7 @@ authRouter.post('/login', async (req: Request, res: Response) => {
         }
 
         const token = jwt.sign({ userId: user._id }, JWT_SECRET, {expiresIn: '1h' })
-        res.status(200).json({token})
+        res.status(200).json({token, lastSyncedTimestamp: user.lastSyncedTimestamp})
     } catch (err) {
         console.error(err)
         res.status(500).json({ message: 'Error en el servidor'})
