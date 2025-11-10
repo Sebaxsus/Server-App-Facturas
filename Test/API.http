@@ -1,5 +1,5 @@
 GET http://localhost:3000/sync/last-sync
-Authorization: Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NTg0NDMyMzcsImV4cCI6MTc1ODQ0NjgzN30.LGxUd7ZQQOXa-9QmzPf01KaWSfEFpcIfW_q2ijDq9Kw
+Authorization: Basic eyJhbGci000OiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NjE1MzI2OTAsImV4cCI6MTc2MTUzNjI5MH0.2IWZTlcKcyhEdVd8Gghqb_-zSSZc2mBvHS0f_lGcu2M
 
 ### Creando un usuario
 POST http://localhost:3000/auth/register
@@ -24,15 +24,10 @@ Content-Type: application/json
 ### Sincronizando Datos sin tener un LastSyncTimestamp
 
 POST http://localhost:3000/sync/Ahorros
-Authorization: Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NTg0NDMyMzcsImV4cCI6MTc1ODQ0NjgzN30.LGxUd7ZQQOXa-9QmzPf01KaWSfEFpcIfW_q2ijDq9Kw
+Authorization: Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NjE1MzI2OTAsImV4cCI6MTc2MTUzNjI5MH0.2IWZTlcKcyhEdVd8Gghqb_-zSSZc2mBvHS0f_lGcu2M
 Content-Type: application/json
 
 {
-    "user": {
-        "userId": "68cbd51a4036ad0d548fbe95",
-        "username": "sebas",
-        "passwordHash": "$2b$10$Hhz/e3X0DEICuZrfa4wtEe2LbvoLb1eRkhb42ozEHJwFFIjByqsxm"
-    },
     "ahorros": [
             {
                 "_id": "1",
@@ -58,15 +53,10 @@ Content-Type: application/json
 ### Sincronizando Datos con LastSyncTimestamp
 
 POST http://localhost:3000/sync/Ahorros
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NTg0NDMyMzcsImV4cCI6MTc1ODQ0NjgzN30.LGxUd7ZQQOXa-9QmzPf01KaWSfEFpcIfW_q2ijDq9Kw
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NjE1MzI2OTAsImV4cCI6MTc2MTUzNjI5MH0.2IWZTlcKcyhEdVd8Gghqb_-zSSZc2mBvHS0f_lGcu2M
 Content-Type: application/json
 
 {
-    "user": {
-        "userId":"68cbd51a4036ad0d548fbe95",
-        "username":"sebas",
-        "passwordHash":"$2b$10$Hhz/e3X0DEICuZrfa4wtEe2LbvoLb1eRkhb42ozEHJwFFIjByqsxm"
-    },
     "ahorros": [
             {
                 "_id": "2",
@@ -92,7 +82,7 @@ Content-Type: application/json
 
 ### Probando la ruta Facturas
 POST http://localhost:3000/sync/Facturas
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NTg0NDMyMzcsImV4cCI6MTc1ODQ0NjgzN30.LGxUd7ZQQOXa-9QmzPf01KaWSfEFpcIfW_q2ijDq9Kw
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NjE1MzI2OTAsImV4cCI6MTc2MTUzNjI5MH0.2IWZTlcKcyhEdVd8Gghqb_-zSSZc2mBvHS0f_lGcu2M
 Content-Type: application/json
 
 {
@@ -120,7 +110,7 @@ Content-Type: application/json
 
 ### Probando el Filtro de datos repetidos
 POST http://localhost:3000/sync/Facturas
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NTg0NDMyMzcsImV4cCI6MTc1ODQ0NjgzN30.LGxUd7ZQQOXa-9QmzPf01KaWSfEFpcIfW_q2ijDq9Kw
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NjE1MzI2OTAsImV4cCI6MTc2MTUzNjI5MH0.2IWZTlcKcyhEdVd8Gghqb_-zSSZc2mBvHS0f_lGcu2M
 Content-Type: application/json
 
 {
@@ -155,7 +145,7 @@ Content-Type: application/json
 ### Probando la Ruta de Arriendo sin lastSyncedTimestamp
 
 POST http://localhost:3000/sync/Arriendo
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NTg0NDMyMzcsImV4cCI6MTc1ODQ0NjgzN30.LGxUd7ZQQOXa-9QmzPf01KaWSfEFpcIfW_q2ijDq9Kw
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NjE1MzI2OTAsImV4cCI6MTc2MTUzNjI5MH0.2IWZTlcKcyhEdVd8Gghqb_-zSSZc2mBvHS0f_lGcu2M
 Content-Type: application/json
 
 {
@@ -169,7 +159,7 @@ Content-Type: application/json
 ### Probando la Ruta de recibos con el tipo de Factura Gas
 
 POST http://localhost:3000/sync/Recibos
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NTg0NDMyMzcsImV4cCI6MTc1ODQ0NjgzN30.LGxUd7ZQQOXa-9QmzPf01KaWSfEFpcIfW_q2ijDq9Kw
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NjE1MzI2OTAsImV4cCI6MTc2MTUzNjI5MH0.2IWZTlcKcyhEdVd8Gghqb_-zSSZc2mBvHS0f_lGcu2M
 Content-Type: application/json
 
 {
@@ -198,3 +188,7 @@ Content-Type: application/json
 ### Probando la Respuesta a una Ruta desconocida
 
 GET http://localhost:3000/sasd
+
+### Probando el Ping al Servidor
+
+GET http://localhost:3000/ping
