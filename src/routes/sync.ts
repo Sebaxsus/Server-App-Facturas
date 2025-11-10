@@ -27,10 +27,10 @@ syncRouter.get('/last-sync', authToken, validateDoc, async (req: DocRequest, res
         console.log(`Last sync id: ${houseId}, house: ${house}`)
         // const user = await User.findById({ userId })  
         if (!house) {
-        return res.status(404).json({
-            message: "La casa registrada en su usuario No se encuentra en la Base de Datos!."
-        })
-    }
+            return res.status(404).json({
+                message: "La casa registrada en su usuario No se encuentra en la Base de Datos!."
+            })
+        }
         // if (!user) {
         //     return res.status(404).json({ message: 'Usuario no encontrado.' })
         // }
