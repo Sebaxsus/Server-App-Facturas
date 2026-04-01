@@ -10,3 +10,7 @@
 ## TODO's Scheme >
 
 - [ ] Añadir el campo cuenta contrato para facturas y manejarlo en todos los archivos a los que afecte.
+
+## TODO's Auth
+
+- [ ] Hacer un método `update` para actualizar o cambiar la contraseña, dirección o usuario; Esto con el fin de utilizar el campo Timestamp.
