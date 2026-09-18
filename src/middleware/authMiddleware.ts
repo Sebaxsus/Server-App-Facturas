@@ -15,9 +15,13 @@ export const authToken = (req: AuthRequest, res: Response, next: NextFunction) =
     if (!authHeader) {
         return res.status(400).json({ message: "Asegurese de estar enviando el encabezado de Autorizacion"})
     }
-    const token = authHeader && authHeader.split(' ')[1]
+    const [scheme, token] = authHeader.split(' ')
 
-    // console.log("Token recibido en el Middle: ", token)
+    if (scheme !== 'Bearer') {
+        return res.status(401).json({ message: "Esquema de autorizacion invalido, se esperaba 'Bearer'" })
+    }
+
+    console.log("Token recibido en el Middle: ", token)
 
     if (token == null) {
         return res.status(401).json({ message: "Asegurese que se esta enviando el token"})
@@ -25,7 +29,11 @@ export const authToken = (req: AuthRequest, res: Response, next: NextFunction) =
 
     jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
         if (err) {
-            return res.status(498).json({message: err})
+            console.error("Fallo la verificacion del token: ", err)
+            return res.status(498).json({ message: "Token invalido o expirado" })
+        }
+        if (user.type === 'refresh') {
+            return res.status(401).json({ message: "Token de acceso invalido, use el access token" })
         }
         req.user = {
             userId: user.userId,

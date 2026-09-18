@@ -104,11 +104,13 @@ const syncCollection = (dbCollection: any[], incomingData: any[] | undefined, sy
 }
 
 // Ruta de Sync para Ahorros
-syncRouter.post("/Ahorros", authToken, validateDoc, async (req: SyncRequest<{ ahorros: MovimientoAhorro[] }>, res: Response) => {
-    // Deberia agruegar un capo type dentro de la req para diferenciar entre ahorros personales y de Casa
+syncRouter.post("/Ahorros", authToken, validateDoc, async (req: SyncRequest<{ ahorros: MovimientoAhorro[], type?: 'personal' | 'casa' }>, res: Response) => {
     // console.log("Entro a Ahorros: ")
     try {
         const { ahorros, lastSyncedTimestamp } = req.body
+        // Campo type para diferenciar entre ahorros personales (User.ahorros) y de Casa (House.ahorros)
+        // Default 'casa' para no romper a clientes que aun no mandan este campo
+        const type = req.body.type === 'personal' ? 'personal' : 'casa'
         let syncedCount = { value: 0}
         const userId = req.user?.userId
         const houseId = req.user?.houseId
@@ -133,7 +135,7 @@ syncRouter.post("/Ahorros", authToken, validateDoc, async (req: SyncRequest<{ ah
 
         // Uso findById en lugar de findOne porque es mas rapido y tiene el mismo resultado
         // Lo encuentra o no 
-        const user = await User.findById(userId).select("lastSyncedTimestamp")
+        const user = await User.findById(userId).select("ahorros lastSyncedTimestamp")
         const house = await House.findById(houseId).select("ahorros lastSyncedTimestamp")
 
         // console.log(`User data Mg: ${user} | House data Mg: ${house}`)
@@ -162,7 +164,12 @@ syncRouter.post("/Ahorros", authToken, validateDoc, async (req: SyncRequest<{ ah
         // En caso de ya esten los Documentos y Colecciones creadas solo agruego lo necesario
         // Filtrando los datos existentes de los que no.
         // Agruegando los nuevos datos
-        house.ahorros = syncCollection(house.ahorros, ahorros, syncedCount, "_id")
+        // type 'personal' sincroniza contra User.ahorros, type 'casa' (default) contra House.ahorros
+        if (type === 'personal') {
+            user.ahorros = syncCollection(user.ahorros, ahorros, syncedCount, "_id")
+        } else {
+            house.ahorros = syncCollection(house.ahorros, ahorros, syncedCount, "_id")
+        }
         house.lastSyncedTimestamp = new Date()  // Ultima actualizacion de datos en BD - Es decir cuando se llegue hasta aqui
         user.lastSyncedTimestamp = lastSyncedTimestamp === undefined ? null : new Date(lastSyncedTimestamp) // La fecha de el Cliente
         // Cambie la interfaz de HouseData y UserData para que reciba String|Date|Null,
@@ -278,6 +285,8 @@ syncRouter.post('/Recibos', authToken, validateDoc, async (req: SyncRequest<{ re
         const userId = req.user?.userId
         const syncedCount = { value: 0 }
 
+        // TODO: Migrarlo a un Middle que verifique el cuerpo de la Peticion (Request)
+
         if (!recibos) {
             return res.status(400).json({
                 message: "Verifique el cuerpo de la Peticion!, Faltan propiedades/Parametros!"
@@ -335,11 +344,14 @@ syncRouter.post('/Recibos', authToken, validateDoc, async (req: SyncRequest<{ re
         user.lastSyncedTimestamp = lastSyncedTimestamp === undefined ? null : new Date(lastSyncedTimestamp)
 
         await house.save()
-        await user.save() 
+        await user.save()
 
         res.status(200).json({
-            message: 'Sincronización de Información de Arreindo completada',
+            message: `Sincronización de Recibos (${tipo}) completada`,
             syncedCount: syncedCount.value,
+            // Todo id entrante queda representado en la BD tras el merge (nuevo, actualizado, o ya vigente)
+            // El cliente puede usar esto para marcar esos recibos locales como 'synced'
+            ids: recibos.map(recibo => recibo._id),
             lastSyncedTimestamp: {
                 user: user.lastSyncedTimestamp,
                 house: house.lastSyncedTimestamp
@@ -400,9 +412,9 @@ syncRouter.post('/Arriendo', authToken, validateDoc, async (req: SyncRequest<{ a
         await house.save()
         await user.save()
 
-        res.status(200).json({
+        res.status(201).json({
             message: 'Sincronización de Información de Arreindo completada',
-            syncedCount: null,
+            syncedCount: 1,
             id: house.arriendo._id,
             lastSyncedTimestamp: {
                 user: user.lastSyncedTimestamp,
