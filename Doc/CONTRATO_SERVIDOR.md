@@ -11,6 +11,10 @@
 > recibos sincronizados por id (`ids` en la respuesta de `POST /sync/Recibos`), tras reconciliar
 > contra `Mi_Primer_Electron/Doc/CONTRATO_SERVIDOR.md`. Fotografía original: 2026-09-04.
 >
+> **Actualizado 2026-09-25**: se separó el almacenamiento de archivos de Mongo — nuevo gateway
+> `POST /cdn` / `GET /cdn/:id` (reverse proxy hacia un servicio interno de archivos) y rename de
+> `Recibo.comprobante` a `Recibo.comprobanteId`. Ver sección "Almacenamiento de archivos".
+>
 > Es la contraparte autoritativa de
 > `Mi_Primer_Electron/Doc/CONTRATO_SERVIDOR.md` (el contrato que el **cliente** asume). Ese
 > documento no se modifica desde aquí; la sección [Reconciliación](#reconciliación-con-las-preguntas-abiertas-del-cliente)
@@ -136,7 +140,7 @@ this.passwordHash)`.
 | Sub-schema | `_id` | Campos | Quién genera `_id` |
 | --- | --- | --- | --- |
 | `MovimientoAhorroSchema` | `String`, `required`, `_id: false` | `movimiento`, `fecha`, `usuario` (todos `String` `required`), `monto` (`Number` `required`), `timestamp` (`String` `required`, indexado) | **Cliente** (UUID generado localmente) |
-| `RecibosSchema` | `String`, `required`, `_id: false` | `tipoFacturaId`, `fechaDePago`, `comprobante`, `timestamp` (todos `String` `required`), `estado` (`String`, default `'Pendiente'`) | **Cliente** (UUID) |
+| `RecibosSchema` | `String`, `required`, `_id: false` | `tipoFacturaId`, `fechaDePago`, `comprobanteId` (renombrado 2026-09-25, antes `comprobante`), `timestamp` (todos `String` `required`), `estado` (`String`, default `'Pendiente'`) | **Cliente** (UUID) |
 | `TipoFacturaSchema` | ObjectId autogenerado, `_id: true` | `tipo`, `empresa`, `paginaDePago`, `fechaDeLlegada` (todos `String` `required`), `bimestral` (`Boolean` `required`), `lastSyncedTimestamp` (`Date`, setter ISO→Date, default `null`) | **Servidor** (Mongo `ObjectId`) |
 | `ArriendoSchema` | ObjectId autogenerado, `_id: true` | `fechaDePago`, `direccion`, `arrendatario` (todos `String` `required`), `valor` (`Number` `required`), `lastSyncedTimestamp` (`Date`, mismo setter) | **Servidor** (Mongo `ObjectId`) |
 
@@ -146,6 +150,38 @@ son manejados manualmente por la aplicación.
 **No existe** ningún campo `REFERENCIA` en `TipoFacturaSchema` (ver reconciliación, pregunta 4).
 `Recibo` no distingue semánticamente `fechaDePago` de `timestamp` más allá de guardarlos como
 `String` — el servidor no valida ni interpreta su significado (ver reconciliación, pregunta 5).
+
+> **Cambio de contrato 2026-09-25**: `Recibo.comprobante` (base64/ruta local, sin validar) se
+> renombró a `Recibo.comprobanteId` — ahora es el `id` devuelto por `POST /cdn` (ver sección
+> siguiente), no el archivo en sí. **`Mi_Primer_Electron` debe actualizarse**: hoy manda una ruta
+> local absoluta en ese campo (su `saveComprobante()` nunca llegó a implementar la subida real) —
+> con este cambio, el flujo correcto es subir primero el archivo a `POST /cdn` y usar el `id` que
+> devuelve como `comprobanteId` al llamar `POST /sync/Recibos`.
+
+## Almacenamiento de archivos — "CDN" interno (`src/routes/files.ts`, `src/fileServer/`)
+
+Los archivos (comprobantes, y a futuro cualquier otro adjunto) ya no viajan embebidos en el JSON
+de sync — se suben aparte a un gateway autenticado que hace de **reverse proxy** hacia un segundo
+servidor Express interno dedicado solo a guardar/leer bytes en disco (`src/fileServer/fileServer.ts`,
+puerto `FILE_SERVER_PORT`, default `4100`, atado a `127.0.0.1`, nunca expuesto a la red). El
+Express principal nunca toca el disco directamente.
+
+| Ruta | Método | Auth | Body / Params | Respuesta |
+| --- | --- | --- | --- | --- |
+| `/cdn` | POST | `authToken` + `validateDoc` | `multipart/form-data`, campo `file` (jpg/jpeg/png/webp/pdf, máx. 5MB) | `201 { id, url }` |
+| `/cdn/:id` | GET | `authToken` + `validateDoc` | — | Bytes del archivo, `Content-Type` según el `mimetype` guardado en Mongo |
+
+- `POST /cdn` reescribe el path a `/store` en el servicio interno; cuando responde `201`, el
+  gateway crea la metadata en Mongo (colección `File`, `src/schemas/Mongo/File.ts`: `_id` = mismo
+  id que el archivo en disco, `houseId`, `ownerUserId`, `mimetype`, `originalName`, `size`) y
+  recién ahí responde al cliente real con `{ id, url: '/cdn/' + id }`.
+- `GET /cdn/:id` primero resuelve `File.findById(id)`: `404` si no existe, `403` si
+  `file.houseId` no coincide con `req.user.houseId` — solo entonces hace de proxy hacia
+  `GET /retrieve/:id` en el servicio interno, sobreescribiendo el header `Content-Type` de la
+  respuesta con el `mimetype` guardado en Mongo (el servicio interno no sabe qué tipo de archivo
+  es, solo bytes).
+- El schema `File` es genérico (no atado a "recibo") — pensado para reusarse también en foto de
+  perfil u otros adjuntos a futuro.
 
 ## Flujo de sincronización (`src/routes/sync.ts`)
 

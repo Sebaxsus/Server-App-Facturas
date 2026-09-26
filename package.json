@@ -2,15 +2,18 @@
   "type": "module",
   "scripts": {
     "start": "nodemon dist/server.js",
+    "start:log": "nodemon dist/server.js --log",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts --esm",
+    "dev:log": "ts-node-dev --respawn --transpile-only src/server.ts --esm --log",
     "dev:2": "tsc --watch",
-    "build": "tsc"
+    "build": "tsc && node -e \"require('fs').copyFileSync('src/utils/loggerWorker.mjs','dist/utils/loggerWorker.mjs')\""
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "2.8.5",
     "dotenv": "^17.2.2",
     "express": "5.1.0",
+    "http-proxy-middleware": "^4.2.0",
     "jsonwebtoken": "9.0.2",
     "mongoose": "8.18.0",
     "multer": "2.0.2"

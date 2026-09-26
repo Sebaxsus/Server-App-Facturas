@@ -1,6 +1,7 @@
 import { type Response, type NextFunction } from "express"
 import { type AuthRequest } from "../interfaces/authInterface.js"
 import jwt from "jsonwebtoken"
+import { logger } from "../utils/logger.js"
 // Puto Node y las ENV con DotEnv,
 // Porque no la detectas Node, en server si y aqui no 😿
 // Inyectate bien porfa aaaaaaaaa 😡
@@ -10,7 +11,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "putoDotEnv&PutoTS"
 
 export const authToken = (req: AuthRequest, res: Response, next: NextFunction) => {
     const authHeader = req.headers['authorization']
-    console.log("authHeader: ", authHeader)
+    logger.debug("authToken", "authHeader: ", authHeader)
 
     if (!authHeader) {
         return res.status(400).json({ message: "Asegurese de estar enviando el encabezado de Autorizacion"})
@@ -21,7 +22,7 @@ export const authToken = (req: AuthRequest, res: Response, next: NextFunction) =
         return res.status(401).json({ message: "Esquema de autorizacion invalido, se esperaba 'Bearer'" })
     }
 
-    console.log("Token recibido en el Middle: ", token)
+    logger.debug("authToken", "Token recibido en el Middle: ", token)
 
     if (token == null) {
         return res.status(401).json({ message: "Asegurese que se esta enviando el token"})
@@ -29,7 +30,7 @@ export const authToken = (req: AuthRequest, res: Response, next: NextFunction) =
 
     jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
         if (err) {
-            console.error("Fallo la verificacion del token: ", err)
+            logger.warn("authToken", "Fallo la verificacion del token: ", err)
             return res.status(498).json({ message: "Token invalido o expirado" })
         }
         if (user.type === 'refresh') {
