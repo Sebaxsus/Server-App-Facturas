@@ -15,7 +15,7 @@ export interface Recibo {
     _id: string, // Se crea en el Cliente
     tipoFacturaId: string,
     fechaDePago: string,
-    comprobante: string,
+    comprobanteId: string, // Id de referencia al File guardado via POST /cdn
     timestamp: string,
     estado:  "Pagado" | "Pendiente",
     // syncStatus?: 'pending' | 'synced', Este campo DEBE ser solo de el Cliente 

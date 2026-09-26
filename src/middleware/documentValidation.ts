@@ -2,6 +2,7 @@ import type { Response, NextFunction } from "express"
 import type { DocRequest } from "../interfaces/authInterface.js"
 import { User } from "../schemas/Mongo/User.js"
 import { House } from "../schemas/Mongo/House.js"
+import { logger } from "../utils/logger.js"
 
 export const validateDoc = async (req: DocRequest, res: Response, next: NextFunction) => {
 
@@ -11,7 +12,7 @@ export const validateDoc = async (req: DocRequest, res: Response, next: NextFunc
     // {_id: ObjectId(), houseId: ObjectId()}, _id es el Id del usuario
     const houseId = (await User.findById(userId).select('houseId'))?.houseId
 
-    console.log(`UserId ValidMid: ${userId} | HouseId: ${houseId}`)
+    logger.debug('validateDoc', `UserId ValidMid: ${userId} | HouseId: ${houseId}`)
     // Como el flujo seria:
     //  Verificar que si existe el Usuario
     //  Verificar que si existe un HouseId en el Usuario

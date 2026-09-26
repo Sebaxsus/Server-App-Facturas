@@ -1,6 +1,13 @@
 # Logs
 logs
 *.log
+
+# Archivos subidos al servicio interno de archivos (src/fileServer)
+uploads
+
+# TXT sin importancio personal
+Test/Soy_La_Beast.txt
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

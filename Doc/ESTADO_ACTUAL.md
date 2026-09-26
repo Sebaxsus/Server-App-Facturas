@@ -15,6 +15,15 @@
 > sincronizados por id) y se corrigieron algunos de los bugs menores de auth/sync listados en la
 > sección 5 — ver `Doc/TODO.md`, sección "Hallazgos de la revisión del 2026-09-17", para el
 > detalle de qué se marcó como resuelto.
+>
+> **Actualizado 2026-09-25**: se implementó un logger personalizado (`src/utils/logger.ts`,
+> singleton, worker_thread propio, rotación de `logs/app.log` al arrancar) que reemplaza todos
+> los `console.log`/`console.error` del código fuente — ver sección 3 y `Doc/TODO.md`, sección
+> "Hallazgos de la revisión del 2026-09-25".
+>
+> **Actualizado 2026-09-25 (2)**: se separó el almacenamiento de archivos de Mongo — nuevo
+> gateway `/cdn` (reverse proxy hacia un servicio interno de archivos, `src/fileServer/`) y
+> rename de `Recibo.comprobante` a `comprobanteId`. Ver sección 3 y `Doc/TODO.md`.
 
 ## 1. Arquitectura
 
@@ -76,6 +85,8 @@ ruta. `/auth/*` y `/ping` no pasan por ningún middleware de autenticación.
 | `/sync/Facturas` | POST | `authToken`, `validateDoc` | Funcional, sin validación de input dedicada (TODO explícito) |
 | `/sync/Recibos` | POST | `authToken`, `validateDoc` | Funcional, con bugs de mensaje y supuestos no validados (ver sección 5) |
 | `/sync/Arriendo` | POST | `authToken`, `validateDoc` | Funcional |
+| `/cdn` | POST | `authToken`, `validateDoc` | Funcional — **nuevo 2026-09-25**, reverse proxy hacia `src/fileServer/` |
+| `/cdn/:id` | GET | `authToken`, `validateDoc` | Funcional — **nuevo 2026-09-25**, valida propiedad por `houseId` |
 | `/ping` (inline en `server.ts`) | GET | ninguno | Funcional |
 | `/ping` (`src/routes/ping.ts`) | GET | ninguno | **No montado** — código muerto, nunca se importa en `server.ts` |
 | `/search` | — | — | Nunca implementado, solo un comentario `// app.use('/search')` en `server.ts` |
@@ -99,6 +110,26 @@ ruta. `/auth/*` y `/ping` no pasan por ningún middleware de autenticación.
   `User.ahorros`) de `type: 'casa'`/default (sincroniza `House.ahorros`, comportamiento previo).
 - **Confirmación de recibos sincronizados por id (2026-09-17)**: `POST /sync/Recibos` devuelve
   `ids` con los ids del batch entrante, para que el cliente marque esos recibos como `synced`.
+- **Logger personalizado (2026-09-25)**: `src/utils/logger.ts` (singleton, no se pueden crear dos
+  instancias) reemplaza todos los `console.log`/`console.error` del código fuente. Niveles
+  `TRACE, DEBUG, INFO, WARN, ERROR, CRITICAL` con color ANSI en consola y formato
+  `[LEVEL] dd/MM/YYYY-HH:mm Title - Message`. La escritura a disco (`logs/app.log`) corre en un
+  `worker_thread` dedicado (`src/utils/loggerWorker.mjs`) para no bloquear el hilo principal —
+  el orden de escritura queda garantizado por la entrega FIFO de mensajes al worker. El archivo
+  rota a `logs/app.log.old` cada vez que arranca el servidor. En arranque normal solo se ven en
+  consola `WARN`/`ERROR`/`CRITICAL`; con `npm run dev:log` / `start:log` se ven todos los niveles.
+  Se agregaron manejadores de `SIGINT`/`SIGTERM` en `server.ts` (no existían) que esperan a que
+  el worker termine de escribir lo pendiente (`logger.shutdown()`) antes de cerrar Mongo y salir.
+- **Almacenamiento de archivos separado de Mongo, "CDN" interno (2026-09-25)**: por fin se usa
+  `multer` (instalado desde antes, nunca usado). Dos servidores Express dentro del mismo proceso:
+  `src/fileServer/fileServer.ts` (interno, sin Mongo, atado a `127.0.0.1:FILE_SERVER_PORT` default
+  `4100`, solo guarda/lee bytes en `uploads/`) y el gateway público `src/routes/files.ts` montado
+  en `/cdn`, que reusa `authToken`/`validateDoc` y hace de **reverse proxy** (`http-proxy-middleware`,
+  nueva dependencia) hacia el servicio interno — el Express principal nunca toca el disco
+  directamente. La metadata (`houseId`, `ownerUserId`, `mimetype`, `originalName`, `size`) vive en
+  una nueva colección Mongo `File` (`src/schemas/Mongo/File.ts`), genérica (no atada a "recibo").
+  `Recibo.comprobante` se renombró a `comprobanteId` (ahora referencia un `File._id`, no un
+  base64/ruta) — **`sync.ts` no necesitó cambios**, ya trataba ese campo como opaco.
 
 **Pendiente (a nivel de feature, no bugs puntuales — ver `Doc/TODO.md` para el detalle):**
 - Soporte mDNS/Bonjour para exponer el servidor por nombre de host en la red local
@@ -112,8 +143,6 @@ ruta. `/auth/*` y `/ping` no pasan por ningún middleware de autenticación.
   roles/permisos.
 - Rate limiting / protección contra fuerza bruta en `/auth/login`, `/auth/register` y
   `/auth/refresh`.
-- Subida real de archivos vía `multer` (dependencia instalada, sin usar en ningún archivo) —
-  hoy `comprobante` viaja como string base64 dentro del JSON.
 - Middleware dedicado de validación de body para `/sync/Facturas` y `/sync/Recibos` (dos TODOs
   explícitos en el código, ver sección 5).
 
@@ -142,17 +171,20 @@ del 2026-09-04". Resumen por archivo:
 - **`src/server.ts`**: `MONGO_URI` leída de env pero nunca usada (conexión hardcodeada); ruta
   `/search` comentada, nunca implementada; existe un `pingRouter` en `src/routes/ping.ts` que
   nunca se monta (duplicado con distinta forma de respuesta respecto al `/ping` inline).
-- **`src/middleware/authMiddleware.ts`**: en el working tree actual (sin commitear) hay un
-  `console.log` reactivado que imprime el JWT crudo recibido — riesgo de exposición de
-  credenciales en logs. ~~el error `498` devuelve el objeto de error completo de `jsonwebtoken`
-  en el body~~ y ~~el middleware no valida el esquema del header `Authorization`~~ — **ambos
-  resueltos 2026-09-17**: el `498` ahora responde un mensaje genérico (el error real solo se
-  loguea server-side), y el esquema `Bearer` se valida explícitamente.
-- **`src/routes/auth.ts`**: `console.log` que imprime `username`, `direccion` y **password en
-  texto plano** tanto en registro como en login; `JWT_SECRET` logueado a consola al arrancar el
-  módulo; `direccion.toLowerCase()` se ejecuta antes de validar que `direccion` exista en el
-  body (si viene `undefined`, lanza una excepción no controlada específicamente, cae al `catch`
-  genérico de `500` en vez de dar un `400` claro).
+- **`src/middleware/authMiddleware.ts`**: el log que imprime el JWT crudo recibido — **nota
+  2026-09-25**: migrado a `logger.debug()`, ya no aparece en consola en arranque normal, pero
+  sigue en texto plano en `logs/app.log` — el pendiente real de eliminarlo sigue abierto. ~~el
+  error `498` devuelve el objeto de error completo de `jsonwebtoken` en el body~~ y ~~el
+  middleware no valida el esquema del header `Authorization`~~ — **ambos resueltos 2026-09-17**:
+  el `498` ahora responde un mensaje genérico (el error real solo se loguea server-side), y el
+  esquema `Bearer` se valida explícitamente.
+- **`src/routes/auth.ts`**: log que imprime `username`, `direccion` y **password en texto
+  plano** tanto en registro como en login; `JWT_SECRET` logueado al arrancar el módulo — **nota
+  2026-09-25**: ambos migrados a `logger.debug()`, ya no aparecen en consola en arranque normal,
+  pero siguen en texto plano en `logs/app.log` — el pendiente de eliminarlos del todo sigue
+  abierto. Además, `direccion.toLowerCase()` se ejecuta antes de validar que `direccion` exista en
+  el body (si viene `undefined`, lanza una excepción no controlada específicamente, cae al
+  `catch` genérico de `500` en vez de dar un `400` claro).
 - **`src/middleware/documentValidation.ts`**: hace dos queries separadas a `User.findById` por
   request (una para resolver `houseId`, otra más adelante para validar existencia) — redundante
   pero funcional; contiene un bloque grande de código comentado que inyectaba `req.userData` y
@@ -186,8 +218,9 @@ del 2026-09-04". Resumen por archivo:
   se ejecuta tal cual; contiene tokens JWT reales embebidos como ejemplo (ver sección 6).
 - **Sin dependencias de testing instaladas** (`jest`, `mongodb-memory-server`) pese a estar
   listadas como pendientes en `Doc/TODO.md`.
-- **`multer`** instalado en `package.json` pero no usado en ningún archivo de `src/` —
-  probablemente destinado a la subida real de comprobantes, hoy manejados como string base64.
+- ~~**`multer`** instalado en `package.json` pero no usado en ningún archivo de `src/`~~ —
+  **resuelto 2026-09-25**: ahora se usa en `src/fileServer/fileServer.ts` para la subida real de
+  archivos vía `POST /cdn`.
 
 ## 6. Verificación de datos sensibles
 

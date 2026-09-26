@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken"
 import { User, type IUser } from "../schemas/Mongo/User.js"
 import { House, type IHouse } from "../schemas/Mongo/House.js"
 import mongoose, { Schema, type Document } from "mongoose"
+import { logger } from "../utils/logger.js"
 // import { json } from "stream/consumers"
 
 const authRouter = Router()
@@ -11,7 +12,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "putoDotEnv&PutoTS"
 const SALT = 10
 const REFRESH_TOKEN_EXPIRES_IN = '7d'
 
-console.log("Secrent en AUTH: ", JWT_SECRET)
+logger.debug("auth", "Secrent en AUTH: ", JWT_SECRET)
 
 if (!JWT_SECRET) {
     throw new Error('JWT_SECRET debe ser definida y cargada correctamente como variable de entorno')
@@ -23,7 +24,7 @@ authRouter.post('/register', async (req: Request, res: Response) => {
         const { username, password } = req.body
         const direccion = req.body.direccion.toLowerCase()
 
-        console.log("Registro de usuario: ", username, direccion, password)
+        logger.debug("auth/register", "Registro de usuario: ", username, direccion, password)
 
         if (!username || !password || !direccion) {
             return res.status(400).json({ message: 'Username, password y direccion son requeridos' })
@@ -36,7 +37,7 @@ authRouter.post('/register', async (req: Request, res: Response) => {
 
         const existingAddress = await House.findOne({ direccion }).select("_id")
 
-        console.log("ExistingAddress: ", existingAddress)
+        logger.debug("auth/register", "ExistingAddress: ", existingAddress)
 
         let houseId
         const timestamp = new Date().toISOString()
@@ -49,7 +50,7 @@ authRouter.post('/register', async (req: Request, res: Response) => {
             })
 
             const house = await newHouse.save()
-            console.log("Se creo una Casa nueva: ", house)
+            logger.debug("auth/register", "Se creo una Casa nueva: ", house)
             houseId = house._id
             // if (newHouse !== resultHosue) {
             //     return res.status(424).json({
@@ -72,7 +73,7 @@ authRouter.post('/register', async (req: Request, res: Response) => {
 
         const user = await newUser.save()
 
-        console.log("Se creo el usuario", user)
+        logger.debug("auth/register", "Se creo el usuario", user)
 
         const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' })
         const refreshToken = jwt.sign({ userId: user._id, type: 'refresh' }, JWT_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRES_IN })
@@ -83,7 +84,7 @@ authRouter.post('/register', async (req: Request, res: Response) => {
             lastSyncedTimestamp: user.lastSyncedTimestamp
         })
     } catch (err) {
-        console.error(err)
+        logger.error("auth/register", err)
         res.status(500).json({message: 'Error Interno en el Servidor'})
     }
 })
@@ -93,7 +94,7 @@ authRouter.post('/login', async (req: Request, res: Response) => {
     try {
         const { username, password } = req.body
 
-        console.log("Login de usuario: ", username, " COntra ", password)
+        logger.debug("auth/login", "Login de usuario: ", username, " COntra ", password)
 
         if (!username || !password) {
             return res.status(400).json({ message: 'Username y password son requeridos'})
@@ -114,7 +115,7 @@ authRouter.post('/login', async (req: Request, res: Response) => {
             lastSyncedTimestamp: user.lastSyncedTimestamp
         })
     } catch (err) {
-        console.error(err)
+        logger.error("auth/login", err)
         res.status(500).json({ message: 'Error en el servidor'})
     }
 })
@@ -130,7 +131,7 @@ authRouter.post('/refresh', async (req: Request, res: Response) => {
 
         jwt.verify(refreshToken, JWT_SECRET, (err: any, decoded: any) => {
             if (err) {
-                console.error("Fallo la verificacion del refreshToken: ", err)
+                logger.warn("auth/refresh", "Fallo la verificacion del refreshToken: ", err)
                 return res.status(401).json({ message: 'refreshToken invalido o expirado' })
             }
 
@@ -147,7 +148,7 @@ authRouter.post('/refresh', async (req: Request, res: Response) => {
             })
         })
     } catch (err) {
-        console.error(err)
+        logger.error("auth/refresh", err)
         res.status(500).json({ message: 'Error en el servidor' })
     }
 })

@@ -170,7 +170,7 @@ Content-Type: application/json
             "tipoFacturaId": "68cfb9f1d860f968c359c519",
             "fechaDePago": "2025-07-15T00:00:00",
             "estado": "Pagado",
-            "comprobante": "base64://string-de-la-imagen",
+            "comprobanteId": "id-devuelto-por-POST-/cdn",
             "timestamp": "2025-08-18T14:30:00.000Z",
             "syncStatus": "pending"
         },
@@ -179,12 +179,32 @@ Content-Type: application/json
             "tipoFacturaId": "68cfb9f1d860f968c359c519",
             "fechaDePago": "2025-08-15T00:00:00",
             "estado": "Pendiente",
-            "comprobante": "",
+            "comprobanteId": "",
             "timestamp": "2025-08-18T14:30:00.000Z",
             "syncStatus": "pending"
         }
     ]
 }
+### Subiendo un archivo al "CDN" interno (reverse proxy hacia src/fileServer)
+# Usar un cliente HTTP que soporte multipart (REST Client de VSCode sí) — reemplazar
+# el path de abajo por un archivo real (jpg/png/webp/pdf, máx 5MB) y el token por uno vigente.
+
+POST http://localhost:3000/cdn
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NjE1MzI2OTAsImV4cCI6MTc2MTUzNjI5MH0.2IWZTlcKcyhEdVd8Gghqb_-zSSZc2mBvHS0f_lGcu2M
+Content-Type: multipart/form-data; boundary=----boundary
+
+------boundary
+Content-Disposition: form-data; name="file"; filename="comprobante.pdf"
+Content-Type: application/pdf
+
+< ./comprobante-de-prueba.pdf
+------boundary--
+
+### Descargando un archivo del "CDN" (reemplazar :id por el id devuelto arriba)
+
+GET http://localhost:3000/cdn/id-devuelto-por-el-post-anterior
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGNmYjZlNTJhNDljZGIyNTA0YWJlMjYiLCJpYXQiOjE3NjE1MzI2OTAsImV4cCI6MTc2MTUzNjI5MH0.2IWZTlcKcyhEdVd8Gghqb_-zSSZc2mBvHS0f_lGcu2M
+
 ### Probando la Respuesta a una Ruta desconocida
 
 GET http://localhost:3000/sasd

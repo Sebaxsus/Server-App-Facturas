@@ -10,6 +10,7 @@ import { House } from "../schemas/Mongo/House.js"
 // Imports MiddleWares
 import { authToken } from "../middleware/authMiddleware.js"
 import { validateDoc } from "../middleware/documentValidation.js"
+import { logger } from "../utils/logger.js"
 
 const syncRouter = Router()
 
@@ -24,7 +25,7 @@ syncRouter.get('/last-sync', authToken, validateDoc, async (req: DocRequest, res
         // const userId = req.user?.userId
 
         const house = await House.findById(houseId).select("lastSyncedTimestamp")
-        console.log(`Last sync id: ${houseId}, house: ${house}`)
+        logger.debug("sync/last-sync", `Last sync id: ${houseId}, house: ${house}`)
         // const user = await User.findById({ userId })  
         if (!house) {
             return res.status(404).json({
@@ -39,11 +40,11 @@ syncRouter.get('/last-sync', authToken, validateDoc, async (req: DocRequest, res
         // Establesco que es null para que el cliente entienda que no hay una fecha aun. 
         const lastSyncedTimestamp = typeof house.lastSyncedTimestamp === undefined ? null : house.lastSyncedTimestamp
 
-        console.log("Elemento Casa desde Mongo: ",house, house.lastSyncedTimestamp, typeof house.lastSyncedTimestamp, typeof house.lastSyncedTimestamp === "undefined", typeof house.lastSyncedTimestamp === undefined, lastSyncedTimestamp)
+        logger.trace("sync/last-sync", "Elemento Casa desde Mongo: ",house, house.lastSyncedTimestamp, typeof house.lastSyncedTimestamp, typeof house.lastSyncedTimestamp === "undefined", typeof house.lastSyncedTimestamp === undefined, lastSyncedTimestamp)
 
         res.status(200).json({ lastSyncedTimestamp })
     } catch (err) {
-        console.error("Fallo /last-sync Error:", err)
+        logger.error("sync/last-sync", "Fallo /last-sync Error:", err)
         res.status(500).json({ message: 'Error en el servidor'})
     }
 })
@@ -67,7 +68,7 @@ syncRouter.get('/last-sync', authToken, validateDoc, async (req: DocRequest, res
 const syncCollection = (dbCollection: any[], incomingData: any[] | undefined, syncedCount: { value: number }, propiedadUnica: String) => {
     // Propiedad unica como su nombre lo indica es la propiedad de el Sub-esquema o Documento
     // Por la cual voy a comparar si ya existe o no
-    console.log(`Entro a syncCollection dbCollection: ${dbCollection} | ${dbCollection.length}, incomingData: ${incomingData} | ${incomingData?.length}, syncedCount: ${syncedCount.value}`)
+    logger.trace("syncCollection", `Entro a syncCollection dbCollection: ${dbCollection} | ${dbCollection.length}, incomingData: ${incomingData} | ${incomingData?.length}, syncedCount: ${syncedCount.value}`)
     // Si no hay datos en la Peticion pues no sincronizo nada 👍
     if (!incomingData || !Array.isArray(incomingData)) {
         return dbCollection
@@ -79,7 +80,7 @@ const syncCollection = (dbCollection: any[], incomingData: any[] | undefined, sy
         // En caso de que si exista Devuelve el Indice.
         const dbItemIndex = dbCollection.findIndex(item => item[`${propiedadUnica}`] === incomingItem[`${propiedadUnica}`])
         // Si el Indice es 0 o Mayor entra, (Es decir existe un Item).
-        console.log(`Item #${dbItemIndex}: ${dbItemIndex >= 0 ? dbCollection[dbItemIndex][`${propiedadUnica}`] : incomingItem[`${propiedadUnica}`]}`)
+        logger.trace("syncCollection", `Item #${dbItemIndex}: ${dbItemIndex >= 0 ? dbCollection[dbItemIndex][`${propiedadUnica}`] : incomingItem[`${propiedadUnica}`]}`)
         if (dbItemIndex > -1) {
             // Obtengo la fecha de Creacion de el Item en BD y lo Parseo a un Obj Date.
             const dbTimestamp = new Date(dbCollection[dbItemIndex].timestamp)
@@ -195,14 +196,14 @@ syncRouter.post("/Ahorros", authToken, validateDoc, async (req: SyncRequest<{ ah
         })
 
     } catch (err) {
-        console.error("Fallo /Ahorros, Error: ", err)
+        logger.error("sync/Ahorros", "Fallo /Ahorros, Error: ", err)
         res.status(500).json({ message: 'Error en el Servidor' })
     }
 })
 
 // Ruta de Sync para Guardar una nueva Factura (empresa, sitioDePago, fechaDellegada, etc...)
 syncRouter.post('/Facturas', authToken, validateDoc, async (req: SyncRequest<{ tipoFactura: TipoFactura[] }>, res: Response) => {
-    console.log("Entro a Facturas(Tipo):")
+    logger.debug("sync/Facturas", "Entro a Facturas(Tipo):")
     try {
         const { tipoFactura, lastSyncedTimestamp } = req.body
         const syncedCount = { value: 0 }
@@ -271,14 +272,14 @@ syncRouter.post('/Facturas', authToken, validateDoc, async (req: SyncRequest<{ t
         })
 
     } catch (err) {
-        console.error("Fallo /Facturas, Error: ", err)
+        logger.error("sync/Facturas", "Fallo /Facturas, Error: ", err)
         return res.status(500).json({ message: 'Error en el Servidor' })
     }
 })
 
 // Ruta para guardar los Recibos (reciboFactura y reciboArriendo)
 syncRouter.post('/Recibos', authToken, validateDoc, async (req: SyncRequest<{ recibos: Recibo[], tipo: "Arriendo" | "Facturas" }>, res: Response) => {
-    console.log(`Entro a recibos, Tipo: ${req.body.tipo}`)
+    logger.debug("sync/Recibos", `Entro a recibos, Tipo: ${req.body.tipo}`)
     try {
         const { recibos, tipo, lastSyncedTimestamp } = req.body
         const houseId = req.user?.houseId
@@ -304,7 +305,7 @@ syncRouter.post('/Recibos', authToken, validateDoc, async (req: SyncRequest<{ re
         const user = await User.findById(userId).select("lastSyncedTimestamp")
         const house = await House.findById(houseId).select(`tipoFactura recibos${tipo} lastSyncedTimestamp`)
 
-        console.log("Casa Data: ", house, " Casa Facturas: ", house?.tipoFactura)
+        logger.trace("sync/Recibos", "Casa Data: ", house, " Casa Facturas: ", house?.tipoFactura)
         
         if (!house) {
             return res.status(404).json({
@@ -324,7 +325,7 @@ syncRouter.post('/Recibos', authToken, validateDoc, async (req: SyncRequest<{ re
             })
         }
         const FacturaIndex = house.tipoFactura.findIndex(factura => factura._id.toString() === recibos[0]?.tipoFacturaId)
-        console.log(FacturaIndex)
+        logger.trace("sync/Recibos", "FacturaIndex: ", FacturaIndex)
         if (!house.tipoFactura[FacturaIndex]) {
             return res.status(400).json({
                 message: "No se encontro ese tipo de Factura en la Base de Datos!."
@@ -359,7 +360,7 @@ syncRouter.post('/Recibos', authToken, validateDoc, async (req: SyncRequest<{ re
         })
 
     } catch (err) {
-        console.error("Fallo /Recibos, Error: ", err)
+        logger.error("sync/Recibos", "Fallo /Recibos, Error: ", err)
         return res.status(500).json({ message: 'Error en el Servidor.' })
     }
 })
@@ -423,7 +424,7 @@ syncRouter.post('/Arriendo', authToken, validateDoc, async (req: SyncRequest<{ a
         })
     
     } catch (err) {
-        console.error("Fallo /Arriendo, Error: ", err)
+        logger.error("sync/Arriendo", "Fallo /Arriendo, Error: ", err)
         return res.status(500).json({ message: 'Error en el Servidor' })
     }
 })

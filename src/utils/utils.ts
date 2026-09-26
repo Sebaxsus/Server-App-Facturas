@@ -1,4 +1,5 @@
 import os from 'node:os';
+import { logger } from './logger.js'
 
 export const getLocalIPAddress = (): string | null => {
     const networkInterfaces = os.networkInterfaces();
@@ -18,6 +19,6 @@ export const getLocalIPAddress = (): string | null => {
             }
         }
     }
-    console.log(`Local IP Address: ${localIP}`);
+    logger.debug('getLocalIPAddress', `Local IP Address: ${localIP}`)
     return localIP // Retorna la IP Local o null si no se encontro
 }

@@ -60,7 +60,7 @@ const RecibosSchema = new Schema<Recibo>({
     _id: { type: String, required: true, index: true },
     tipoFacturaId: { type: String, required: true },
     fechaDePago: { type: String, required: true },
-    comprobante: { type: String, required: true },
+    comprobanteId: { type: String, required: true },
     timestamp: { type: String, required: true },
     estado: { type: String, default: 'Pendiente' }
 }, { _id: false })

@@ -26,8 +26,11 @@ import mongoose from "mongoose"
 // Routers
 import syncRouter from "./routes/sync.js"
 import authRouter from './routes/auth.js'
+import filesRouter from './routes/files.js'
 // Middleware
 import { corsMiddleware } from './middleware/cors.js'
+import { logger } from './utils/logger.js'
+import { startFileServer } from './fileServer/fileServer.js'
 
 const app = express()
 
@@ -38,9 +41,9 @@ app.use(corsMiddleware())
 // Driver a MongoDB
 mongoose.connect('mongodb://localhost/appCuentas')
 .then(() => {
-    console.log('Conectado a MongoDB')
+    logger.info('MongoDB', 'Conectado a MongoDB')
 }).catch(err => {
-    console.log('Error al conectarse con MongoDB, Error:', err)
+    logger.critical('MongoDB', 'Error al conectarse con MongoDB, Error:', err)
 })
 
 // Rutas
@@ -53,6 +56,10 @@ app.use('/auth', authRouter)
 
 // Ruta de Sincronizacion
 app.use('/sync', syncRouter)
+
+// Ruta "CDN": gateway autenticado que hace de reverse proxy hacia el servicio interno
+// de archivos (src/fileServer.ts), separando responsabilidades BD (Mongo) - Archivos (disco)
+app.use('/cdn', filesRouter)
 
 // Ruta verificacion servidor Online
 app.get("/ping", (req: Request, res: Response) => {
@@ -68,8 +75,25 @@ app.use((req, res) => {
 
 
 app.listen(PORT, () => {
-    console.log(`Server RESTFUL Online\nEscuchando en el puerto ${PORT}\nDireccion http://${HOST}:${PORT}`)
+    logger.info('Server', `Server RESTFUL Online. Escuchando en el puerto ${PORT}. Direccion http://${HOST}:${PORT}`)
 })
+
+// Servicio interno de archivos (mismo proceso, puerto aparte, solo 127.0.0.1) — ver
+// src/fileServer/fileServer.ts. El Express principal lo alcanza via reverse proxy en /cdn.
+startFileServer()
+
+// Ciclo de vida del proceso: al apagar el servidor (Ctrl+C u orden del sistema),
+// se espera a que el worker del logger termine de escribir lo pendiente antes de
+// cerrar la conexion a Mongo y salir.
+const shutdown = async (signal: string) => {
+    logger.info('Shutdown', `Señal ${signal} recibida, apagando servidor...`)
+    await logger.shutdown()
+    await mongoose.disconnect()
+    process.exit(0)
+}
+
+process.on('SIGINT', () => void shutdown('SIGINT'))
+process.on('SIGTERM', () => void shutdown('SIGTERM'))
 
 // Export para los test
 export default app

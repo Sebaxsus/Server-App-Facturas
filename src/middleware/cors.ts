@@ -1,4 +1,5 @@
 import cors, { type CorsOptions } from "cors"
+import { logger } from "../utils/logger.js"
 
 //Modificar la cabecera para permitir las peticiones de navegadores
 //Mediante CORS (Cross Origin Resources Share)
@@ -32,7 +33,7 @@ interface CorsMiddlewareOptions {
 const corsMiddleware = ({acceptedOrigins = ACCEPTED_ORIGINS}: CorsMiddlewareOptions = {}) => {
     const options: CorsOptions = {
         origin : (origin, callback) => {
-            console.log("Entro a peticion siguiendo con esta code 100 origin: ", origin)
+            logger.debug("corsMiddleware", "Entro a peticion siguiendo con esta code 100 origin: ", origin)
             // Si el origen no existe (AKA es una Peticion de el Mismo Servidor o Local)
             if (!origin) {
                 return callback(null,true)
